@@ -43,7 +43,7 @@ Page({
 
     const recentRecords = records.slice(0, 3).map(item => ({
       ...item,
-      displayDate: this.formatDate(item.date),
+      displayDate: this.formatDateRange(item),
       materialText: `${(item.files && item.files.length) || 0}份材料`,
       coverDisplay: item.cover || ''
     }))
@@ -68,6 +68,14 @@ Page({
     }
 
     return map[name] || '▦'
+  },
+
+  formatDateRange(record) {
+    if (record.endDate && record.endDate !== record.date) {
+      return `${record.date} 至 ${record.endDate}`
+    }
+
+    return record.date || '暂无记录'
   },
 
   formatDate(value) {
