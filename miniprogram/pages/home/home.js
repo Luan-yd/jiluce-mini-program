@@ -1,3 +1,6 @@
+const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
+const CATEGORY_STORAGE_KEY = 'customCategories'
+
 Page({
   data: {
     recordCount: 0,
@@ -9,6 +12,11 @@ Page({
 
   onShow() {
     this.loadHomeData()
+  },
+
+  getCategories() {
+    const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
+    return Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
   },
 
   loadHomeData() {
@@ -24,22 +32,13 @@ Page({
       ? this.formatDate(records[0].updatedAt || records[0].createdAt || records[0].date)
       : '暂无记录'
 
-    const categories = ['展会', '兼职', '实习', '项目', '证书', '其他']
+    const categories = this.getCategories()
 
-    const categoryStats = categories.map(name => {
-      const count = records.filter(item => {
-        if (name === '其他') {
-          return !['展会', '兼职', '实习', '项目', '证书'].includes(item.category)
-        }
-        return item.category === name
-      }).length
-
-      return {
-        name,
-        count,
-        icon: this.getCategoryIcon(name)
-      }
-    })
+    const categoryStats = categories.map(name => ({
+      name,
+      count: records.filter(item => item.category === name).length,
+      icon: this.getCategoryIcon(name)
+    }))
 
     const recentRecords = records.slice(0, 3).map(item => ({
       ...item,
@@ -59,11 +58,10 @@ Page({
 
   getCategoryIcon(name) {
     const map = {
-      '展会': '🏢',
-      '兼职': '💼',
-      '实习': '🎓',
-      '项目': '📚',
-      '证书': '📜',
+      '项目': '▤',
+      '实习': '◫',
+      '旅游': '◇',
+      '记忆': '◌',
       '其他': '▦'
     }
 
