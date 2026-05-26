@@ -20,10 +20,19 @@
 </view>
 
 <view class="form-card">
-  <view class="input-label">日期 *</view>
+  <view class="input-label">开始日期 *</view>
   <picker mode="date" value="{{form.date}}" bindchange="onDateChange">
     <view class="picker-value {{form.date ? '' : 'placeholder'}}">
-      {{form.date || '请选择日期'}}
+      {{form.date || '请选择开始日期'}}
+    </view>
+  </picker>
+</view>
+
+<view class="form-card">
+  <view class="input-label">结束日期（选填）</view>
+  <picker mode="date" value="{{form.endDate}}" bindchange="onEndDateChange">
+    <view class="picker-value {{form.endDate ? '' : 'placeholder'}}">
+      {{form.endDate || '请选择结束日期'}}
     </view>
   </picker>
 </view>
