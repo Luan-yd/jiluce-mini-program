@@ -1,5 +1,34 @@
 const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
 const CATEGORY_STORAGE_KEY = 'customCategories'
+const DEFAULT_CATEGORY_ICONS = {
+  '项目': '📁',
+  '实习': '💼',
+  '旅游': '✈️',
+  '记忆': '📷',
+  '其他': '✨'
+}
+const BACKUP_CATEGORY_ICONS = [
+  '🗂️',
+  '📝',
+  '📌',
+  '⭐',
+  '🎯',
+  '🧩',
+  '📚',
+  '🏆',
+  '💡',
+  '🔖',
+  '🧾',
+  '🖼️',
+  '🎒',
+  '🌱',
+  '🛠️',
+  '🤝',
+  '📍',
+  '🕒',
+  '🎓',
+  '🏡'
+]
 
 Page({
   data: {
@@ -34,10 +63,10 @@ Page({
 
     const categories = this.getCategories()
 
-    const categoryStats = categories.map(name => ({
+    const categoryStats = categories.map((name, index) => ({
       name,
       count: records.filter(item => item.category === name).length,
-      icon: this.getCategoryIcon(name)
+      icon: this.getCategoryIcon(name, index)
     }))
 
     const recentRecords = records.slice(0, 3).map(item => ({
@@ -56,16 +85,12 @@ Page({
     })
   },
 
-  getCategoryIcon(name) {
-    const map = {
-      '项目': '▤',
-      '实习': '◫',
-      '旅游': '◇',
-      '记忆': '◌',
-      '其他': '▦'
+  getCategoryIcon(name, index) {
+    if (DEFAULT_CATEGORY_ICONS[name]) {
+      return DEFAULT_CATEGORY_ICONS[name]
     }
 
-    return map[name] || '▦'
+    return BACKUP_CATEGORY_ICONS[index % BACKUP_CATEGORY_ICONS.length]
   },
 
   formatDateRange(record) {
