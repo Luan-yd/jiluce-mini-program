@@ -33,7 +33,7 @@
 
 <view class="content-card">
     <view class="detail-title">{{record.title}}</view>
-<view class="detail-meta">{{record.date}}｜{{record.category}}｜{{record.location}}</view>
+<view class="detail-meta">{{record.dateRangeText}}｜{{record.category}}｜{{record.location}}</view>
 
 <view class="action-row">
   <button class="edit-btn" bindtap="editRecord">编辑记录</button>
