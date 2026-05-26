@@ -38,8 +38,19 @@ Page({
       }
   
       this.setData({
-        record
+        record: {
+          ...record,
+          dateRangeText: this.formatDateRange(record)
+        }
       })
+    },
+
+    formatDateRange(record) {
+      if (record.endDate && record.endDate !== record.date) {
+        return `${record.date} 至 ${record.endDate}`
+      }
+
+      return record.date || ''
     },
   
     goBack() {
