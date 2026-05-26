@@ -19,6 +19,14 @@ function safeFileName(name) {
     .slice(0, 40)
 }
 
+function formatDateRange(record) {
+  if (record && record.endDate && record.endDate !== record.date) {
+    return `${record.date || ''} 至 ${record.endDate}`
+  }
+
+  return (record && record.date) || ''
+}
+
 async function fetchImageBuffer(filePath) {
   try {
     if (!filePath) {
@@ -85,6 +93,7 @@ exports.main = async (event) => {
     console.log('generateWord 收到 files：', JSON.stringify(record.files || []))
 
     const children = []
+    const dateText = record.dateRangeText || formatDateRange(record) || '未填写'
 
     children.push(
       new Paragraph({
@@ -109,7 +118,7 @@ exports.main = async (event) => {
         spacing: { after: 200 },
         children: [
           new TextRun({
-            text: `日期：${record.date || '未填写'}`,
+            text: `日期：${dateText}`,
             size: 28
           })
         ]
@@ -303,18 +312,7 @@ exports.main = async (event) => {
         spacing: { after: 200 },
         children: [
           new TextRun({
-            text: '本资料由留痕夹自动整理生成',
-            size: 22,
-            color: '888888'
-          })
-        ]
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-        children: [
-          new TextRun({
-            text: '记录人自述，照片为本人上传',
+            text: '本资料包由迹录册根据用户上传材料自动整理生成，让每一段经历，都有迹可循。',
             size: 22,
             color: '888888'
           })
