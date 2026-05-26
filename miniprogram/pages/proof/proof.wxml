@@ -85,7 +85,7 @@
         wx:key="id"
         class="image-item"
       >
-        <image class="proof-img" src="{{item.path}}" mode="aspectFill"></image>
+        <image class="proof-img" src="{{item.previewPath || item.canvasPath || item.tempPath || item.path}}" mode="aspectFill"></image>
         <view class="img-type">{{item.type}}</view>
       </view>
     </view>
