@@ -60,11 +60,16 @@
 
     <view class="summary-row">
       <text class="summary-label">材料</text>
-      <text class="summary-value">
-        <block wx:for="{{record.proofSummary}}" wx:key="name">
-          {{item.name}}{{item.count}}份 
+      <view class="summary-value summary-material-value">
+        <block wx:if="{{record.proofSummary && record.proofSummary.length > 0}}">
+          <text
+            wx:for="{{record.proofSummary}}"
+            wx:key="name"
+            class="proof-summary-text"
+          >{{item.name}}{{item.count}}份{{index < record.proofSummary.length - 1 ? '，' : ''}}</text>
         </block>
-      </text>
+        <text wx:else>暂无材料</text>
+      </view>
     </view>
 
     <view class="summary-row">
