@@ -13,12 +13,23 @@ Page({
     },
   
     loadRecords() {
-      const records = wx.getStorageSync('records') || []
+      const records = (wx.getStorageSync('records') || []).map(item => ({
+        ...item,
+        dateRangeText: this.formatDateRange(item)
+      }))
   
       this.setData({
         allRecords: records,
         records
       })
+    },
+
+    formatDateRange(record) {
+      if (record.endDate && record.endDate !== record.date) {
+        return `${record.date} 至 ${record.endDate}`
+      }
+
+      return record.date || ''
     },
   
     onSearchInput(e) {
@@ -75,6 +86,8 @@ Page({
           const text = [
             item.title || '',
             item.date || '',
+            item.endDate || '',
+            item.dateRangeText || '',
             item.location || '',
             item.category || '',
             item.role || '',
