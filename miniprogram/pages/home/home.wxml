@@ -40,7 +40,7 @@
 
   <button class="add-btn" bindtap="goAddRecord">＋ 新增经历</button>
 
-  <view class="category-panel">
+  <view class="category-panel" wx:if="{{categoryStats.length > 0}}">
     <block wx:for="{{categoryStats}}" wx:key="name">
       <view class="category-card">
         <view class="category-icon">{{item.icon}}</view>
@@ -49,6 +49,7 @@
       </view>
     </block>
   </view>
+  <view class="category-empty" wx:else>暂无分类，请在新建记录页添加分类</view>
 
   <view class="section-title-row">
     <view class="section-title">最近记录</view>
