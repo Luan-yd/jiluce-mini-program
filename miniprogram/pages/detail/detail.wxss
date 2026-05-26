@@ -33,6 +33,11 @@
     background: #E5E1DA;
   }
   
+  .hero-swiper {
+    width: 100%;
+    height: 420rpx;
+  }
+  
   .hero-img {
     width: 100%;
     height: 420rpx;
