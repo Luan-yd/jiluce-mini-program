@@ -1,3 +1,8 @@
+const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
+const DEFAULT_PROOF_TYPES = ['现场照片', '工牌证件', '合影', '聊天记录', '合同', '付款记录', '证书', '邮件']
+const CATEGORY_STORAGE_KEY = 'customCategories'
+const PROOF_TYPE_STORAGE_KEY = 'customProofTypes'
+
 Page({
     data: {
       isEdit: false,
@@ -5,20 +10,11 @@ Page({
   
       tagInput: '',
   
-      categories: ['展会','记忆','兼职', '志愿', '实习', '项目', '培训', '合同', '证书', '其他'],
+      categories: DEFAULT_CATEGORIES,
   
-      proofTypes: [
-        '现场照片',
-        '工牌证件',
-        '合影',
-        '聊天记录',
-        '合同',
-        '付款记录',
-        '证书',
-        '邮件'
-      ],
+      proofTypes: DEFAULT_PROOF_TYPES,
   
-      currentProofType: '现场照片',
+      currentProofType: DEFAULT_PROOF_TYPES[0],
   
       files: [],
   
@@ -26,7 +22,7 @@ Page({
         title: '',
         date: '',
         location: '',
-        category: '展会',
+        category: DEFAULT_CATEGORIES[0],
         role: '',
         description: '',
         tags: [],
@@ -35,9 +31,25 @@ Page({
     },
   
     onLoad(options) {
+      this.initManagedLists()
+
       if (options.id) {
         this.loadEditRecord(options.id)
       }
+    },
+
+    initManagedLists() {
+      const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
+      const cachedProofTypes = wx.getStorageSync(PROOF_TYPE_STORAGE_KEY)
+      const categories = Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
+      const proofTypes = Array.isArray(cachedProofTypes) ? cachedProofTypes : DEFAULT_PROOF_TYPES
+
+      this.setData({
+        categories,
+        proofTypes,
+        'form.category': categories[0] || '',
+        currentProofType: proofTypes[0] || ''
+      })
     },
   
     loadEditRecord(id) {
@@ -66,7 +78,7 @@ Page({
           title: record.title || '',
           date: record.date || '',
           location: record.location || '',
-          category: record.category || '展会',
+          category: record.category || '',
           role: record.role || '',
           description: record.description || '',
           tags: record.tags || [],
@@ -105,6 +117,128 @@ Page({
         currentProofType: e.currentTarget.dataset.value
       })
     },
+
+    addCategory() {
+      wx.showModal({
+        title: '新增分类',
+        editable: true,
+        placeholderText: '请输入分类名称',
+        success: res => {
+          if (!res.confirm) return
+
+          const value = (res.content || '').trim()
+
+          if (!value) {
+            wx.showToast({
+              title: '分类不能为空',
+              icon: 'none'
+            })
+            return
+          }
+
+          if (this.data.categories.includes(value)) {
+            wx.showToast({
+              title: '分类已存在',
+              icon: 'none'
+            })
+            return
+          }
+
+          const categories = [...this.data.categories, value]
+          wx.setStorageSync(CATEGORY_STORAGE_KEY, categories)
+
+          this.setData({
+            categories,
+            'form.category': this.data.form.category || value
+          })
+        }
+      })
+    },
+
+    deleteCategory(e) {
+      const value = e.currentTarget.dataset.value
+
+      wx.showModal({
+        title: '删除分类',
+        content: `确定要删除“${value}”吗？已保存记录中的分类文字不会受影响。`,
+        confirmText: '删除',
+        confirmColor: '#B24A3B',
+        success: res => {
+          if (!res.confirm) return
+
+          const categories = this.data.categories.filter(item => item !== value)
+          const nextCategory = this.data.form.category === value ? (categories[0] || '') : this.data.form.category
+
+          wx.setStorageSync(CATEGORY_STORAGE_KEY, categories)
+
+          this.setData({
+            categories,
+            'form.category': nextCategory
+          })
+        }
+      })
+    },
+
+    addProofType() {
+      wx.showModal({
+        title: '新增材料类型',
+        editable: true,
+        placeholderText: '请输入材料类型名称',
+        success: res => {
+          if (!res.confirm) return
+
+          const value = (res.content || '').trim()
+
+          if (!value) {
+            wx.showToast({
+              title: '材料类型不能为空',
+              icon: 'none'
+            })
+            return
+          }
+
+          if (this.data.proofTypes.includes(value)) {
+            wx.showToast({
+              title: '材料类型已存在',
+              icon: 'none'
+            })
+            return
+          }
+
+          const proofTypes = [...this.data.proofTypes, value]
+          wx.setStorageSync(PROOF_TYPE_STORAGE_KEY, proofTypes)
+
+          this.setData({
+            proofTypes,
+            currentProofType: this.data.currentProofType || value
+          })
+        }
+      })
+    },
+
+    deleteProofType(e) {
+      const value = e.currentTarget.dataset.value
+
+      wx.showModal({
+        title: '删除材料类型',
+        content: `确定要删除“${value}”吗？已保存材料上的类型文字不会受影响。`,
+        confirmText: '删除',
+        confirmColor: '#B24A3B',
+        success: res => {
+          if (!res.confirm) return
+
+          const proofTypes = this.data.proofTypes.filter(item => item !== value)
+          const nextProofType = this.data.currentProofType === value ? (proofTypes[0] || '') : this.data.currentProofType
+
+          wx.setStorageSync(PROOF_TYPE_STORAGE_KEY, proofTypes)
+
+          this.setData({
+            proofTypes,
+            currentProofType: nextProofType
+          })
+        }
+      })
+    },
   
     onTagInput(e) {
       const value = e.detail.value
@@ -126,6 +260,14 @@ Page({
     },
   
     async chooseImage() {
+      if (!this.data.currentProofType) {
+        wx.showToast({
+          title: '请先添加材料类型',
+          icon: 'none'
+        })
+        return
+      }
+
       wx.chooseMedia({
         count: 9,
         mediaType: ['image'],
@@ -151,8 +293,8 @@ Page({
     
               newFiles.push({
                 id: Date.now() + '_' + Math.random().toString(36).slice(2),
-                path: uploadRes.fileID,      // 给云函数生成 Word 用，必须是 cloud://
-                tempPath: tempFilePath,      // 给小程序页面本地预览/长图绘制用
+                path: uploadRes.fileID,
+                tempPath: tempFilePath,
                 type: this.data.currentProofType,
                 name: this.data.currentProofType
               })
@@ -239,6 +381,14 @@ Page({
       if (!form.date) {
         wx.showToast({
           title: '请选择日期',
+          icon: 'none'
+        })
+        return
+      }
+
+      if (!form.category) {
+        wx.showToast({
+          title: '请先添加分类',
           icon: 'none'
         })
         return
