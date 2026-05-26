@@ -1,8 +1,11 @@
+const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
+const CATEGORY_STORAGE_KEY = 'customCategories'
+
 Page({
     data: {
       keyword: '',
       currentFilter: '全部',
-      filters: ['全部', '工作', '学习', '活动', '文件'],
+      filters: ['全部', ...DEFAULT_CATEGORIES],
   
       allRecords: [],
       records: []
@@ -11,16 +14,27 @@ Page({
     onShow() {
       this.loadRecords()
     },
+
+    getCategoryFilters() {
+      const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
+      const categories = Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
+      return ['全部', ...categories]
+    },
   
     loadRecords() {
+      const filters = this.getCategoryFilters()
+      const currentFilter = filters.includes(this.data.currentFilter) ? this.data.currentFilter : '全部'
       const records = (wx.getStorageSync('records') || []).map(item => ({
         ...item,
         dateRangeText: this.formatDateRange(item)
       }))
   
       this.setData({
-        allRecords: records,
-        records
+        filters,
+        currentFilter,
+        allRecords: records
+      }, () => {
+        this.filterRecords()
       })
     },
 
@@ -58,25 +72,7 @@ Page({
       let list = allRecords
   
       if (currentFilter !== '全部') {
-        list = list.filter(item => {
-          if (currentFilter === '工作') {
-            return ['展会', '兼职', '实习', '项目'].includes(item.category)
-          }
-  
-          if (currentFilter === '学习') {
-            return ['培训', '证书', '课程'].includes(item.category)
-          }
-  
-          if (currentFilter === '活动') {
-            return ['展会', '志愿', '社团'].includes(item.category)
-          }
-  
-          if (currentFilter === '文件') {
-            return ['合同', '证书', '文件'].includes(item.category)
-          }
-  
-          return true
-        })
+        list = list.filter(item => item.category === currentFilter)
       }
   
       const searchText = (keyword || '').trim().toLowerCase()
