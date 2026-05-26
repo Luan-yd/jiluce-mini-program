@@ -131,6 +131,7 @@
     value="{{form.description}}"
     data-field="description"
     bindinput="onInput"
+    auto-height="{{true}}"
   />
 </view>
 
