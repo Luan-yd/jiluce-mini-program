@@ -1,6 +1,6 @@
 <view class="page">
   <view class="top-area">
-    <view class="title">有迹</view>
+    <view class="title">迹录册</view>
     <view class="slogan">让每段经历，都有迹可循</view>
     <view class="sub-slogan">材料、照片、项目与回忆，都能分类归档、随时导出</view>
   </view>
