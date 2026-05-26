@@ -7,12 +7,25 @@
 </view>
 
 <view class="hero">
-  <image
-    wx:if="{{record.cover}}"
-    class="hero-img"
-    src="{{record.cover}}"
-    mode="aspectFill"
-  />
+  <swiper
+    wx:if="{{record.files && record.files.length > 0}}"
+    class="hero-swiper"
+    indicator-dots="{{record.files.length > 1}}"
+    circular="{{record.files.length > 1}}"
+  >
+    <swiper-item
+      wx:for="{{record.files}}"
+      wx:key="id"
+      bindtap="previewHeroImage"
+      data-index="{{index}}"
+    >
+      <image
+        class="hero-img"
+        src="{{item.tempPath || item.path}}"
+        mode="aspectFill"
+      />
+    </swiper-item>
+  </swiper>
   <view wx:else class="hero-placeholder">
     <text>暂无封面</text>
   </view>
