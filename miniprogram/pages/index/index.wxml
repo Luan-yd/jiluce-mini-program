@@ -58,7 +58,7 @@
 
   <view class="record-body">
     <view class="record-title">{{item.title}}</view>
-    <view class="record-meta">{{item.date}}｜{{item.category}}｜{{item.location}}</view>
+    <view class="record-meta">{{item.dateRangeText}}｜{{item.category}}｜{{item.location}}</view>
 
     <view class="proof-row" wx:if="{{item.proofSummary && item.proofSummary.length > 0}}">
       <view
