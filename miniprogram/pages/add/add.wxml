@@ -79,6 +79,7 @@
 
 <view class="upload-section">
   <view class="upload-title">已选择：{{currentProofType}}</view>
+  <view class="cover-tip">第一张材料图将默认作为封面。如需调整封面，可删除后按希望顺序重新上传。</view>
 
   <view class="upload-row">
     <view
