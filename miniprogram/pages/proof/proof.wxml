@@ -21,7 +21,7 @@
   <view class="meta-grid">
     <view class="meta-item">
       <view class="meta-label">时间</view>
-      <view class="meta-value">{{record.date}}</view>
+      <view class="meta-value">{{record.dateRangeText || record.date}}</view>
     </view>
 
     <view class="meta-item">
@@ -98,7 +98,7 @@
   </view>
 
   <view class="footer-note">
-    本资料包由用户基于个人经历材料整理生成，仅用于资料归档与经历说明。
+    本资料包由迹录册根据用户上传材料自动整理生成，让每一段经历，都有迹可循。
   </view>
 
 </view>
