@@ -9,7 +9,7 @@
     "pages/timeline/timeline"
   ],
   "window": {
-    "navigationBarTitleText": "有迹",
+    "navigationBarTitleText": "迹录册",
     "navigationBarBackgroundColor": "#F7F3EA",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#F7F3EA"
