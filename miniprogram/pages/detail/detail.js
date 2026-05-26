@@ -88,6 +88,16 @@ Page({
         }
       })
     },
+
+    previewHeroImage(e) {
+      const index = e.currentTarget.dataset.index
+      const urls = (this.data.record.files || []).map(item => item.tempPath || item.path)
+  
+      wx.previewImage({
+        current: urls[index],
+        urls
+      })
+    },
   
     previewImage(e) {
       const index = e.currentTarget.dataset.index
