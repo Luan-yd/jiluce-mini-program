@@ -21,6 +21,7 @@ Page({
       form: {
         title: '',
         date: '',
+        endDate: '',
         location: '',
         category: DEFAULT_CATEGORIES[0],
         role: '',
@@ -77,6 +78,7 @@ Page({
         form: {
           title: record.title || '',
           date: record.date || '',
+          endDate: record.endDate || '',
           location: record.location || '',
           category: record.category || '',
           role: record.role || '',
@@ -103,6 +105,12 @@ Page({
     onDateChange(e) {
       this.setData({
         'form.date': e.detail.value
+      })
+    },
+
+    onEndDateChange(e) {
+      this.setData({
+        'form.endDate': e.detail.value
       })
     },
   
@@ -380,7 +388,15 @@ Page({
     
       if (!form.date) {
         wx.showToast({
-          title: '请选择日期',
+          title: '请选择开始日期',
+          icon: 'none'
+        })
+        return
+      }
+
+      if (form.endDate && form.endDate < form.date) {
+        wx.showToast({
+          title: '结束日期不能早于开始日期',
           icon: 'none'
         })
         return
@@ -405,6 +421,7 @@ Page({
               ...item,
               title: form.title,
               date: form.date,
+              endDate: form.endDate || '',
               location: form.location || '未填写地点',
               category: form.category,
               role: form.role || '未填写身份',
@@ -442,6 +459,7 @@ Page({
         id: Date.now().toString(),
         title: form.title,
         date: form.date,
+        endDate: form.endDate || '',
         location: form.location || '未填写地点',
         category: form.category,
         role: form.role || '未填写身份',
