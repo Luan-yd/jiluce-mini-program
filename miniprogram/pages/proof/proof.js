@@ -418,7 +418,7 @@ Page({
             const restCount = Math.max(0, files.length - 1)
             const restRows = restCount > 0 ? Math.ceil(restCount / 2) : 0
 
-            let estimatedHeight = 1260 + descriptionBoxH
+            let estimatedHeight = 1220 + descriptionBoxH
 
             if (files.length > 0) {
               estimatedHeight += 390
@@ -432,7 +432,7 @@ Page({
               estimatedHeight += 80
             }
 
-            estimatedHeight = Math.max(1450, estimatedHeight)
+            estimatedHeight = Math.max(1400, estimatedHeight)
 
             canvas.width = width * dpr
             canvas.height = estimatedHeight * dpr
@@ -448,7 +448,7 @@ Page({
             // 顶部装饰区
             this.roundRect(ctx, cardX, 32, cardW, 330, 34, '#DDECE7')
 
-            let y = 96
+            let y = 118
 
             // Logo
             await this.drawLogoToCanvas(canvas, ctx, LOGO_PATH, contentX, y, 66, 66, 18)
@@ -479,40 +479,15 @@ Page({
             ctx.font = 'bold 42px sans-serif'
             y = this.drawWrappedText(ctx, record.title || '未命名记录', contentX, y, contentW, 56, 2)
 
-            y += 24
+            // 进入内容区。顶部只保留品牌和标题，日期/分类/地点/身份放在基本信息里。
+            y = Math.max(370, y + 30)
 
-            const metaLine = [
-              dateRangeText,
-              record.category || '未填写分类',
-              record.location || '未填写地点'
-            ].join('  ·  ')
-
-            ctx.fillStyle = '#4F5A58'
-            ctx.font = '25px sans-serif'
-            y = this.drawWrappedText(ctx, metaLine, contentX, y, contentW, 36, 2)
-
-            y += 24
-
-            // 身份胶囊
-            const roleText = record.role || '未填写身份'
-            ctx.font = '23px sans-serif'
-            const rolePillWidth = Math.min(360, ctx.measureText(roleText).width + 46)
-
-            this.roundRect(ctx, contentX, y - 4, rolePillWidth, 42, 21, '#294C60')
-
-            ctx.fillStyle = '#FFFFFF'
-            ctx.font = 'bold 23px sans-serif'
-            ctx.fillText(roleText, contentX + 20, y + 25)
-
-            // 进入内容区
-            y = 410
-
-            // 档案信息卡
+            // 基本信息卡
             this.roundRect(ctx, contentX, y, contentW, 230, 26, '#F8F6F1')
 
             ctx.fillStyle = '#294C60'
             ctx.font = 'bold 30px sans-serif'
-            ctx.fillText('档案信息', contentX + 24, y + 44)
+            ctx.fillText('基本信息', contentX + 24, y + 44)
 
             const infoRows = [
               ['时间', dateRangeText || '未填写'],
