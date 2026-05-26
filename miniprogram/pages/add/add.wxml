@@ -39,18 +39,23 @@
   />
 </view>
 
-<view class="section-title">分类</view>
+<view class="section-title-row">
+  <view class="section-title compact-title">分类</view>
+  <view class="manage-add" bindtap="addCategory">＋ 新增分类</view>
+</view>
 <view class="chip-row">
   <view
     wx:for="{{categories}}"
     wx:key="*this"
-    class="chip {{form.category === item ? 'active' : ''}}"
+    class="chip editable-chip {{form.category === item ? 'active' : ''}}"
     bindtap="selectCategory"
     data-value="{{item}}"
   >
-    {{item}}
+    <text class="chip-text">{{item}}</text>
+    <text class="chip-delete" catchtap="deleteCategory" data-value="{{item}}">×</text>
   </view>
 </view>
+<view wx:if="{{categories.length === 0}}" class="empty-tip">请先添加分类</view>
 
 <view class="form-card">
   <view class="input-label">角色 / 身份</view>
@@ -65,20 +70,26 @@
 
 <view class="step-text space-top">2/3 材料</view>
 
+<view class="section-title-row proof-title-row">
+  <view class="section-title compact-title">材料类型</view>
+  <view class="manage-add" bindtap="addProofType">＋ 新增材料类型</view>
+</view>
 <view class="proof-grid">
   <view
     wx:for="{{proofTypes}}"
     wx:key="*this"
-    class="proof-type {{currentProofType === item ? 'active' : ''}}"
+    class="proof-type editable-proof-type {{currentProofType === item ? 'active' : ''}}"
     bindtap="selectProofType"
     data-value="{{item}}"
   >
-    {{item}}
+    <text class="proof-type-text">{{item}}</text>
+    <text class="proof-delete" catchtap="deleteProofType" data-value="{{item}}">×</text>
   </view>
 </view>
+<view wx:if="{{proofTypes.length === 0}}" class="empty-tip proof-empty-tip">请先添加材料类型</view>
 
 <view class="upload-section">
-  <view class="upload-title">已选择：{{currentProofType}}</view>
+  <view class="upload-title">已选择：{{currentProofType || '暂无材料类型'}}</view>
   <view class="cover-tip">第一张材料图将默认作为封面。如需调整封面，可删除后按希望顺序重新上传。</view>
 
   <view class="upload-row">
