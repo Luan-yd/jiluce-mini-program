@@ -55,7 +55,7 @@
   
   .textarea {
     width: 100%;
-    min-height: 160rpx;
+    min-height: 54rpx;
     font-size: 28rpx;
     color: #202124;
     line-height: 1.6;
