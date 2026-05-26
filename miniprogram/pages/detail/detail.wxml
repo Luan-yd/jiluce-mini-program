@@ -60,21 +60,8 @@
     </view>
   </view>
 
-  <view class="section-title">选择新增材料类型</view>
-
-  <view class="proof-grid">
-    <view
-      wx:for="{{proofTypes}}"
-      wx:key="*this"
-      class="proof-type {{currentProofType === item ? 'active' : ''}}"
-      bindtap="selectProofType"
-      data-value="{{item}}"
-    >
-      {{item}}
-    </view>
-  </view>
-
   <view class="section-title">材料</view>
+  <view class="material-tip">如需新增、删除或修改材料，请点击“编辑记录”。</view>
 
   <view class="material-grid">
     <view
@@ -86,12 +73,6 @@
     >
       <image class="material-img" src="{{item.path}}" mode="aspectFill" />
       <view class="material-type">{{item.type}}</view>
-      <view class="material-delete" catchtap="deleteMaterial" data-index="{{index}}">×</view>
-    </view>
-
-    <view class="material-add" bindtap="addMaterial">
-      <view class="material-plus">＋</view>
-      <view class="material-add-text">添加</view>
     </view>
   </view>
 
