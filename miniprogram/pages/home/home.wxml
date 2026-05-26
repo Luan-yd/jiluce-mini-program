@@ -1,0 +1,93 @@
+<view class="page">
+  <view class="top-area">
+    <view class="title">有迹</view>
+    <view class="slogan">让每段经历，都有迹可循</view>
+    <view class="sub-slogan">材料、照片、项目与回忆，都能分类归档、随时导出</view>
+  </view>
+
+  <view class="summary-card">
+    <view class="summary-left">
+      <view class="stat-block">
+        <view class="stat-icon">▤</view>
+        <view class="stat-label">已记录</view>
+        <view class="stat-number">{{recordCount}}</view>
+        <view class="stat-unit">次经历</view>
+      </view>
+
+      <view class="divider"></view>
+
+      <view class="stat-block">
+        <view class="stat-icon">▣</view>
+        <view class="stat-label">累计整理</view>
+        <view class="stat-number">{{materialCount}}</view>
+        <view class="stat-unit">份材料</view>
+      </view>
+    </view>
+
+    <view class="archive-illustration">
+      <view class="paper paper-one"></view>
+      <view class="paper paper-two"></view>
+      <view class="archive-box">
+        <view class="box-label"></view>
+      </view>
+    </view>
+
+    <view class="latest-row">
+      <text class="clock">◷</text>
+      <text>最近更新：{{latestUpdate}}</text>
+    </view>
+  </view>
+
+  <button class="add-btn" bindtap="goAddRecord">＋ 新增经历</button>
+
+  <view class="category-panel">
+    <block wx:for="{{categoryStats}}" wx:key="name">
+      <view class="category-card">
+        <view class="category-icon">{{item.icon}}</view>
+        <view class="category-name">{{item.name}}</view>
+        <view class="category-count">{{item.count}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section-title-row">
+    <view class="section-title">最近记录</view>
+    <view class="view-all" bindtap="goAllRecords">查看全部 ›</view>
+  </view>
+
+  <view class="recent-list" wx:if="{{recentRecords.length > 0}}">
+    <block wx:for="{{recentRecords}}" wx:key="id">
+      <view class="record-card" bindtap="goDetail" data-id="{{item.id}}">
+        <image
+          wx:if="{{item.coverDisplay}}"
+          class="record-cover"
+          src="{{item.coverDisplay}}"
+          mode="aspectFill"
+        ></image>
+
+        <view wx:else class="record-cover empty-cover">
+          <text>{{item.category || '经历'}}</text>
+        </view>
+
+        <view class="record-info">
+          <view class="record-title">{{item.title}}</view>
+          <view class="record-meta">{{item.displayDate}} ｜ {{item.category}}</view>
+        </view>
+
+        <view class="material-badge">{{item.materialText}}</view>
+        <view class="arrow">›</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="empty-card" wx:else>
+    <view class="empty-title">还没有经历记录</view>
+    <view class="empty-desc">从一次兼职、一次展会、一个项目开始，把材料慢慢整理起来。</view>
+  </view>
+
+  <view class="safe-banner">
+    <text class="safe-icon">盾</text>
+    <text>所有材料仅你可见，安全存储，随时导出，并整理成资料包。</text>
+    <text class="safe-arrow">›</text>
+  </view>
+</view>

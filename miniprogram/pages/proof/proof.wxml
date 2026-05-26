@@ -1,0 +1,117 @@
+<view class="proof-page" wx:if="{{record}}">
+
+<view class="top-nav">
+  <view class="back" bindtap="goBack">‹ 返回</view>
+  <view class="nav-title">资料包预览</view>
+  <view class="nav-placeholder"></view>
+</view>
+
+<view class="proof-card" id="proofContent">
+
+  <view class="brand-row">
+    <view class="logo-box">留</view>
+    <view>
+      <view class="brand-title">有迹</view>
+      <view class="brand-subtitle">经历资料包</view>
+    </view>
+  </view>
+
+  <view class="main-title">{{record.title}}</view>
+
+  <view class="meta-grid">
+    <view class="meta-item">
+      <view class="meta-label">时间</view>
+      <view class="meta-value">{{record.date}}</view>
+    </view>
+
+    <view class="meta-item">
+      <view class="meta-label">地点</view>
+      <view class="meta-value">{{record.location}}</view>
+    </view>
+
+    <view class="meta-item">
+      <view class="meta-label">分类</view>
+      <view class="meta-value">{{record.category}}</view>
+    </view>
+
+    <view class="meta-item">
+      <view class="meta-label">身份</view>
+      <view class="meta-value">{{record.role}}</view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">经历说明</view>
+    <view class="description">
+      {{record.description}}
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{record.tags && record.tags.length > 0}}">
+    <view class="section-title">标签</view>
+    <view class="tag-row">
+      <view
+        wx:for="{{record.tags}}"
+        wx:key="*this"
+        class="tag"
+      >
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">材料概览</view>
+    <view class="summary-row">
+      <block wx:if="{{record.proofSummary && record.proofSummary.length > 0}}">
+        <view
+          wx:for="{{record.proofSummary}}"
+          wx:key="name"
+          class="summary-tag"
+        >
+          {{item.name}} {{item.count}}份
+        </view>
+      </block>
+      <view wx:else class="summary-empty">暂无材料</view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{record.files && record.files.length > 0}}">
+    <view class="section-title">材料图片</view>
+
+    <view class="image-grid">
+      <view
+        wx:for="{{record.files}}"
+        wx:key="id"
+        class="image-item"
+      >
+        <image class="proof-img" src="{{item.path}}" mode="aspectFill"></image>
+        <view class="img-type">{{item.type}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer-line"></view>
+
+  <view class="footer-text">
+    生成时间：{{today}}
+  </view>
+
+  <view class="footer-note">
+    本资料包由用户基于个人经历材料整理生成，仅用于资料归档与经历说明。
+  </view>
+
+</view>
+
+<view class="action-area">
+  <button class="action-btn" bindtap="saveAsImage">保存为长图</button>
+  <view class="action-btn" bindtap="generateWord">导出 Word</view>
+</view>
+
+<canvas
+  type="2d"
+  id="proofCanvas"
+  class="hidden-canvas"
+></canvas>
+
+</view>

@@ -1,0 +1,103 @@
+<view class="detail-page" wx:if="{{record}}">
+
+<view class="top-nav">
+  <view class="back-text" bindtap="goList">‹ 列表</view>
+  <view class="nav-title">记录详情</view>
+  <view class="nav-placeholder"></view>
+</view>
+
+<view class="hero">
+  <image
+    wx:if="{{record.cover}}"
+    class="hero-img"
+    src="{{record.cover}}"
+    mode="aspectFill"
+  />
+  <view wx:else class="hero-placeholder">
+    <text>暂无封面</text>
+  </view>
+</view>
+
+<view class="content-card">
+    <view class="detail-title">{{record.title}}</view>
+<view class="detail-meta">{{record.date}}｜{{record.category}}｜{{record.location}}</view>
+
+<view class="action-row">
+  <button class="edit-btn" bindtap="editRecord">编辑记录</button>
+  <button class="delete-record-btn" bindtap="deleteRecord">删除记录</button>
+</view>
+
+  <view class="tag-row">
+    <view
+      wx:for="{{record.tags}}"
+      wx:key="*this"
+      class="tag-green"
+    >
+      {{item}}
+    </view>
+  </view>
+
+  <view class="section-title">证明摘要</view>
+
+  <view class="summary-box">
+    <view class="summary-row">
+      <text class="summary-label">身份</text>
+      <text class="summary-value">{{record.role}}</text>
+    </view>
+
+    <view class="summary-row">
+      <text class="summary-label">材料</text>
+      <text class="summary-value">
+        <block wx:for="{{record.proofSummary}}" wx:key="name">
+          {{item.name}}{{item.count}}份 
+        </block>
+      </text>
+    </view>
+
+    <view class="summary-row">
+      <text class="summary-label">备注</text>
+      <text class="summary-value">{{record.description}}</text>
+    </view>
+  </view>
+
+  <view class="section-title">选择新增材料类型</view>
+
+  <view class="proof-grid">
+    <view
+      wx:for="{{proofTypes}}"
+      wx:key="*this"
+      class="proof-type {{currentProofType === item ? 'active' : ''}}"
+      bindtap="selectProofType"
+      data-value="{{item}}"
+    >
+      {{item}}
+    </view>
+  </view>
+
+  <view class="section-title">材料</view>
+
+  <view class="material-grid">
+    <view
+      wx:for="{{record.files}}"
+      wx:key="id"
+      class="material-item"
+      bindtap="previewImage"
+      data-index="{{index}}"
+    >
+      <image class="material-img" src="{{item.path}}" mode="aspectFill" />
+      <view class="material-type">{{item.type}}</view>
+      <view class="material-delete" catchtap="deleteMaterial" data-index="{{index}}">×</view>
+    </view>
+
+    <view class="material-add" bindtap="addMaterial">
+      <view class="material-plus">＋</view>
+      <view class="material-add-text">添加</view>
+    </view>
+  </view>
+
+  <button class="export-btn" bindtap="generateProof">
+    生成资料包
+  </button>
+</view>
+
+</view>

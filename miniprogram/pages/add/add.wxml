@@ -1,0 +1,148 @@
+<view class="container">
+
+<view class="top-nav">
+  <view class="back" bindtap="goBack">‹ 返回</view>
+  <view class="nav-title">{{isEdit ? '编辑记录' : '新建记录'}}</view>
+  <view class="nav-placeholder"></view>
+</view>
+
+<view class="step-text">1/3 基本信息</view>
+
+<view class="form-card">
+  <view class="input-label">标题 *</view>
+  <input
+    class="input"
+    placeholder="例如：华南国际工业博览会 深圳馆"
+    value="{{form.title}}"
+    data-field="title"
+    bindinput="onInput"
+  />
+</view>
+
+<view class="form-card">
+  <view class="input-label">日期 *</view>
+  <picker mode="date" value="{{form.date}}" bindchange="onDateChange">
+    <view class="picker-value {{form.date ? '' : 'placeholder'}}">
+      {{form.date || '请选择日期'}}
+    </view>
+  </picker>
+</view>
+
+<view class="form-card">
+  <view class="input-label">地点</view>
+  <input
+    class="input"
+    placeholder="例如：上海国家会展中心"
+    value="{{form.location}}"
+    data-field="location"
+    bindinput="onInput"
+  />
+</view>
+
+<view class="section-title">分类</view>
+<view class="chip-row">
+  <view
+    wx:for="{{categories}}"
+    wx:key="*this"
+    class="chip {{form.category === item ? 'active' : ''}}"
+    bindtap="selectCategory"
+    data-value="{{item}}"
+  >
+    {{item}}
+  </view>
+</view>
+
+<view class="form-card">
+  <view class="input-label">角色 / 身份</view>
+  <input
+    class="input"
+    placeholder="例如：负责人 / 执行协助 / 商务沟通"
+    value="{{form.role}}"
+    data-field="role"
+    bindinput="onInput"
+  />
+</view>
+
+<view class="step-text space-top">2/3 材料</view>
+
+<view class="proof-grid">
+  <view
+    wx:for="{{proofTypes}}"
+    wx:key="*this"
+    class="proof-type {{currentProofType === item ? 'active' : ''}}"
+    bindtap="selectProofType"
+    data-value="{{item}}"
+  >
+    {{item}}
+  </view>
+</view>
+
+<view class="upload-section">
+  <view class="upload-title">已选择：{{currentProofType}}</view>
+
+  <view class="upload-row">
+    <view
+      wx:for="{{files}}"
+      wx:key="id"
+      class="upload-img-wrap"
+      bindtap="previewImage"
+      data-index="{{index}}"
+    >
+      <image class="upload-img" src="{{item.path}}" mode="aspectFill" />
+      <view class="file-type">{{item.type}}</view>
+      <view class="delete-btn" catchtap="deleteFile" data-index="{{index}}">×</view>
+    </view>
+
+    <view class="upload-box" bindtap="chooseImage">
+      <view class="plus">＋</view>
+      <view class="upload-text">添加材料</view>
+    </view>
+  </view>
+</view>
+
+<view class="step-text space-top">3/3 备注信息</view>
+
+<view class="form-card">
+  <view class="input-label">备注描述</view>
+  <textarea
+    class="textarea"
+    placeholder="补充说明，如合作方、地点、负责内容等"
+    value="{{form.description}}"
+    data-field="description"
+    bindinput="onInput"
+  />
+</view>
+
+<view class="form-card">
+  <view class="input-label">标签</view>
+  <input
+    class="input"
+    placeholder="例如：项目、深圳、工业科技，用逗号分隔"
+    value="{{tagInput}}"
+    bindinput="onTagInput"
+  />
+</view>
+
+<view class="section-title">隐私设置</view>
+<radio-group bindchange="onPrivacyChange">
+  <label class="privacy-item">
+    <radio value="exportable" checked="{{form.privacy === 'exportable'}}" color="#294C60" />
+    <text>可导出，用于生成资料包</text>
+  </label>
+
+  <label class="privacy-item">
+    <radio value="private" checked="{{form.privacy === 'private'}}" color="#294C60" />
+    <text>私密，仅自己可见</text>
+  </label>
+
+  <label class="privacy-item">
+    <radio value="locked" checked="{{form.privacy === 'locked'}}" color="#294C60" />
+    <text>加密，导出需确认</text>
+  </label>
+</radio-group>
+
+<button class="save-btn" bindtap="saveRecord">
+  {{isEdit ? '保存修改' : '保存记录'}}
+</button>
+
+</view>

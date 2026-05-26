@@ -1,0 +1,97 @@
+<view class="container">
+
+<view class="header">
+  <view>
+    <view class="page-title">有迹</view>
+    <view class="page-subtitle">经历归档</view>
+  </view>
+  <view class="more" bindtap="openMoreMenu">•••</view>
+</view>
+
+<view class="search-box">
+  <text class="search-icon">⌕</text>
+  <input
+    placeholder="搜索活动、地点、角色或证明材料"
+    value="{{keyword}}"
+    bindinput="onSearchInput"
+  />
+</view>
+
+<view class="filter-row">
+  <view
+    wx:for="{{filters}}"
+    wx:key="*this"
+    class="filter {{currentFilter === item ? 'active' : ''}}"
+    bindtap="changeFilter"
+    data-name="{{item}}"
+  >
+    {{item}}
+  </view>
+</view>
+
+<view class="month-title" wx:if="{{records.length > 0}}">
+  我的记录
+</view>
+
+<view
+  wx:for="{{records}}"
+  wx:key="id"
+  class="record-card"
+  bindtap="goDetail"
+  data-id="{{item.id}}"
+>
+  <view class="cover-wrap">
+    <image
+      wx:if="{{item.cover}}"
+      class="cover"
+      src="{{item.cover}}"
+      mode="aspectFill"
+    />
+    <view wx:else class="cover-placeholder">
+      <text>暂无图片</text>
+    </view>
+
+    <view class="photo-count" wx:if="{{item.photoCount}}">
+      {{item.photoCount}}张
+    </view>
+  </view>
+
+  <view class="record-body">
+    <view class="record-title">{{item.title}}</view>
+    <view class="record-meta">{{item.date}}｜{{item.category}}｜{{item.location}}</view>
+
+    <view class="proof-row" wx:if="{{item.proofSummary && item.proofSummary.length > 0}}">
+      <view
+        wx:for="{{item.proofSummary}}"
+        wx:key="name"
+        class="proof-tag"
+      >
+        {{item.name}} {{item.count}}
+      </view>
+    </view>
+
+    <view class="proof-row" wx:else>
+      <view class="proof-tag empty-proof">暂无证明材料</view>
+    </view>
+  </view>
+</view>
+
+<view class="empty" wx:if="{{records.length === 0}}">
+  <view class="empty-title">还没有记录</view>
+  <view class="empty-desc">
+    点击右下角 + ，开始保存你的第一条经历证明
+  </view>
+</view>
+
+<view class="bottom-actions">
+  <view class="timeline-float-btn" bindtap="goTimeline">
+    <view class="btn-icon">⏱</view>
+    <view class="btn-text">查看时间轴</view>
+  </view>
+
+  <view class="add-float-btn" bindtap="goAdd">
+    <view class="add-icon">＋</view>
+  </view>
+</view>
+
+</view>

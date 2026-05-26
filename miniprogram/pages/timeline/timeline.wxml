@@ -1,0 +1,79 @@
+<view class="timeline-page">
+
+<view class="top-header">
+  <view>
+    <view class="page-title">时间轴</view>
+    <view class="page-subtitle">按时间回看你的经历</view>
+  </view>
+
+  <view class="home-btn" bindtap="goIndex">首页</view>
+</view>
+
+<view class="empty" wx:if="{{groups.length === 0}}">
+  <view class="empty-title">还没有时间轴记录</view>
+  <view class="empty-desc">先添加一条经历证明，它会自动出现在这里。</view>
+  <button class="empty-btn" bindtap="goAdd">新建记录</button>
+</view>
+
+<view class="timeline-wrap" wx:else>
+  <view
+    wx:for="{{groups}}"
+    wx:key="month"
+    class="month-group"
+  >
+    <view class="month-title">{{item.month}}</view>
+
+    <view class="month-line">
+      <view
+        wx:for="{{item.records}}"
+        wx:key="id"
+        class="timeline-item"
+        bindtap="goDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="dot"></view>
+
+        <view class="timeline-card">
+          <view class="card-main">
+            <view>
+              <view class="record-title">{{item.title}}</view>
+              <view class="record-meta">{{item.date}}｜{{item.category}}｜{{item.location}}</view>
+            </view>
+
+            <view class="record-type">{{item.category}}</view>
+          </view>
+
+          <view class="record-desc">{{item.description}}</view>
+
+          <view class="tag-row" wx:if="{{item.tags && item.tags.length > 0}}">
+            <view
+              wx:for="{{item.tags}}"
+              wx:key="*this"
+              class="small-tag"
+            >
+              {{item}}
+            </view>
+          </view>
+
+          <view class="proof-row" wx:if="{{item.proofSummary && item.proofSummary.length > 0}}">
+            <view
+              wx:for="{{item.proofSummary}}"
+              wx:key="name"
+              class="proof-tag"
+            >
+              {{item.name}} {{item.count}}
+            </view>
+          </view>
+
+          <view class="cover-row" wx:if="{{item.cover}}">
+            <image class="cover-img" src="{{item.cover}}" mode="aspectFill"></image>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="float-btn" bindtap="goAdd">＋</view>
+
+</view>

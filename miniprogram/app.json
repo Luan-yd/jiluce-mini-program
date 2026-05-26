@@ -1,0 +1,37 @@
+{
+  "pages": [
+    "pages/welcome/welcome",
+    "pages/home/home",
+    "pages/index/index",
+    "pages/add/add",
+    "pages/detail/detail",
+    "pages/proof/proof",
+    "pages/timeline/timeline"
+  ],
+  "window": {
+    "navigationBarTitleText": "有迹",
+    "navigationBarBackgroundColor": "#F7F3EA",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F7F3EA"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#28566B",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "images/tabbar/home.png",
+        "selectedIconPath": "images/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/index/index",
+        "text": "经历",
+        "iconPath": "images/tabbar/record.png",
+        "selectedIconPath": "images/tabbar/record-active.png"
+      }
+    ]
+  }
+}

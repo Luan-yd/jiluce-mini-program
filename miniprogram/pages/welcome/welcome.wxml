@@ -1,0 +1,56 @@
+<view class="welcome-page">
+
+<view class="top-area">
+  <view class="logo-box">
+    <text class="logo-text"></text>
+  </view>
+
+  <view class="title">有迹</view>
+  <view class="subtitle">经历归档</view>
+
+  <view class="slogan">
+    记录、整理、保存每一次重要经历
+  </view>
+</view>
+
+<view class="feature-card">
+  <view class="feature-item">
+    <view class="icon">⏱</view>
+    <view>
+      <view class="feature-title">时间线管理</view>
+      <view class="feature-desc">按时间清晰整理活动、项目、照片与回忆</view>
+    </view>
+  </view>
+
+  <view class="feature-item">
+    <view class="icon">✓</view>
+    <view>
+      <view class="feature-title">多类型材料</view>
+      <view class="feature-desc">照片、合同、证书、聊天记录都能统一保存</view>
+    </view>
+  </view>
+
+  <view class="feature-item">
+    <view class="icon">⌕</view>
+    <view>
+      <view class="feature-title">智能搜索</view>
+      <view class="feature-desc">通过标题、地点、角色或标签快速找到记录</view>
+    </view>
+  </view>
+
+  <view class="feature-item">
+    <view class="icon">↓</view>
+    <view>
+      <view class="feature-title">生成资料包</view>
+      <view class="feature-desc">把经历整理成可查看、可分享的资料</view>
+    </view>
+  </view>
+</view>
+
+<button class="start-btn" bindtap="goIndex">开始使用</button>
+
+<view class="bottom-text">
+  把你做过的事，变成找得到、说得清、拿得出的资料。
+</view>
+
+</view>
