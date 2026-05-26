@@ -115,7 +115,7 @@ Page({
             '生成长图资料包',
             '图片转文字 OCR',
             '标签管理',
-            '关于有迹'
+            '关于迹录册'
           ],
           success: res => {
             const index = res.tapIndex
@@ -143,8 +143,8 @@ Page({
       
             if (index === 3) {
               wx.showModal({
-                title: '关于有迹',
-                content: '有迹是一个帮助你记录、整理和导出经历资料的工具。',
+                title: '关于迹录册',
+                content: '迹录册是一个帮助你记录、整理和导出经历资料的工具。',
                 showCancel: false
               })
             }
