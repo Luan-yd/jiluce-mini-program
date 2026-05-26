@@ -133,6 +133,18 @@
     line-height: 1.6;
   }
   
+  .summary-material-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: auto;
+  }
+  
+  .proof-summary-text {
+    display: inline;
+    line-height: 1.6;
+  }
+  
   .material-tip {
     color: #999999;
     font-size: 24rpx;
