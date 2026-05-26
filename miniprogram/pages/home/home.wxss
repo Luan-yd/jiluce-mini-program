@@ -197,13 +197,9 @@ page {
 }
 
 .category-icon {
-  width: 54rpx;
   height: 54rpx;
   line-height: 54rpx;
-  border-radius: 50%;
-  background: #fffdf8;
-  box-shadow: inset 0 0 0 1rpx rgba(229, 225, 218, 0.9);
-  font-size: 30rpx;
+  font-size: 38rpx;
   margin: 0 auto;
 }
 
