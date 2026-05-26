@@ -5,51 +5,51 @@ page {
 
 .page {
   min-height: 100vh;
-  padding: 72rpx 32rpx 180rpx;
+  padding: 54rpx 32rpx 160rpx;
   box-sizing: border-box;
   background: linear-gradient(180deg, #fbf8f0 0%, #f5efe5 100%);
 }
 
 .top-area {
-  padding: 24rpx 12rpx 20rpx;
+  padding: 16rpx 12rpx 14rpx;
 }
 
 .title {
-  font-size: 60rpx;
+  font-size: 54rpx;
   font-weight: 800;
   color: #214f63;
   letter-spacing: 2rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: 14rpx;
 }
 
 .slogan {
-  font-size: 32rpx;
+  font-size: 30rpx;
   color: #4f4a43;
   font-weight: 600;
-  margin-bottom: 12rpx;
+  margin-bottom: 8rpx;
 }
 
 .sub-slogan {
-  font-size: 25rpx;
+  font-size: 24rpx;
   color: #8c8174;
-  line-height: 1.5;
+  line-height: 1.45;
   width: 620rpx;
 }
 
 .summary-card {
   position: relative;
-  margin-top: 30rpx;
-  padding: 42rpx 38rpx 34rpx;
-  border-radius: 36rpx;
+  margin-top: 20rpx;
+  padding: 28rpx 30rpx 24rpx;
+  border-radius: 30rpx;
   background: linear-gradient(135deg, #fffdf8 0%, #f5ecdc 100%);
-  box-shadow: 0 18rpx 42rpx rgba(79, 63, 42, 0.12);
+  box-shadow: 0 14rpx 34rpx rgba(79, 63, 42, 0.11);
   overflow: hidden;
 }
 
 .summary-left {
   display: flex;
   align-items: center;
-  width: 430rpx;
+  width: 410rpx;
 }
 
 .stat-block {
@@ -57,103 +57,103 @@ page {
 }
 
 .stat-icon {
-  width: 54rpx;
-  height: 54rpx;
-  line-height: 54rpx;
+  width: 42rpx;
+  height: 42rpx;
+  line-height: 42rpx;
   text-align: center;
   border-radius: 50%;
   background: rgba(197, 162, 92, 0.16);
   color: #9c7a36;
-  font-size: 28rpx;
-  margin-bottom: 16rpx;
+  font-size: 22rpx;
+  margin-bottom: 10rpx;
 }
 
 .stat-label {
-  font-size: 25rpx;
+  font-size: 23rpx;
   color: #6d6257;
-  margin-bottom: 8rpx;
+  margin-bottom: 6rpx;
 }
 
 .stat-number {
-  font-size: 82rpx;
+  font-size: 64rpx;
   line-height: 1;
   color: #214f63;
   font-weight: 800;
 }
 
 .stat-unit {
-  font-size: 25rpx;
+  font-size: 23rpx;
   color: #4f4a43;
-  margin-top: 8rpx;
+  margin-top: 6rpx;
 }
 
 .divider {
   width: 1rpx;
-  height: 120rpx;
+  height: 96rpx;
   background: rgba(92, 77, 58, 0.16);
-  margin: 0 34rpx;
+  margin: 0 26rpx;
 }
 
 .archive-illustration {
   position: absolute;
-  right: 36rpx;
-  top: 70rpx;
-  width: 190rpx;
-  height: 180rpx;
+  right: 30rpx;
+  top: 52rpx;
+  width: 150rpx;
+  height: 130rpx;
 }
 
 .archive-box {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 150rpx;
-  height: 110rpx;
-  border-radius: 18rpx 18rpx 22rpx 22rpx;
+  width: 120rpx;
+  height: 82rpx;
+  border-radius: 16rpx 16rpx 20rpx 20rpx;
   background: #28566b;
-  box-shadow: 0 12rpx 24rpx rgba(40, 86, 107, 0.18);
+  box-shadow: 0 10rpx 20rpx rgba(40, 86, 107, 0.16);
 }
 
 .box-label {
   position: absolute;
-  left: 48rpx;
-  top: 42rpx;
-  width: 52rpx;
-  height: 24rpx;
+  left: 38rpx;
+  top: 32rpx;
+  width: 42rpx;
+  height: 18rpx;
   border-radius: 6rpx;
   background: #f3dfb8;
 }
 
 .paper {
   position: absolute;
-  width: 96rpx;
-  height: 112rpx;
+  width: 76rpx;
+  height: 88rpx;
   border-radius: 10rpx;
   background: #fffaf0;
-  box-shadow: 0 8rpx 18rpx rgba(77, 59, 36, 0.12);
+  box-shadow: 0 6rpx 14rpx rgba(77, 59, 36, 0.1);
 }
 
 .paper-one {
-  right: 32rpx;
-  top: 8rpx;
+  right: 26rpx;
+  top: 4rpx;
   transform: rotate(-6deg);
 }
 
 .paper-two {
-  right: 60rpx;
-  top: 26rpx;
+  right: 48rpx;
+  top: 18rpx;
   transform: rotate(8deg);
   opacity: 0.9;
 }
 
 .latest-row {
-  margin-top: 34rpx;
-  padding-top: 26rpx;
+  margin-top: 24rpx;
+  padding-top: 18rpx;
   border-top: 1rpx solid rgba(112, 94, 67, 0.1);
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #7a6653;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;
 }
 
 .clock {
@@ -161,15 +161,15 @@ page {
 }
 
 .add-btn {
-  margin-top: 34rpx;
-  height: 96rpx;
-  line-height: 96rpx;
+  margin-top: 24rpx;
+  height: 88rpx;
+  line-height: 88rpx;
   border-radius: 24rpx;
   background: #28566b;
   color: #ffffff;
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 700;
-  box-shadow: 0 16rpx 32rpx rgba(40, 86, 107, 0.22);
+  box-shadow: 0 14rpx 28rpx rgba(40, 86, 107, 0.2);
 }
 
 .add-btn::after {
@@ -177,46 +177,59 @@ page {
 }
 
 .category-panel {
-  margin-top: 28rpx;
-  padding: 22rpx;
-  border-radius: 30rpx;
+  margin-top: 22rpx;
+  padding: 18rpx;
+  border-radius: 26rpx;
   background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 12rpx 28rpx rgba(88, 74, 52, 0.08);
+  box-shadow: 0 10rpx 24rpx rgba(88, 74, 52, 0.08);
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 14rpx;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12rpx;
 }
 
 .category-card {
-  min-height: 124rpx;
-  border-radius: 20rpx;
+  min-height: 112rpx;
+  border-radius: 18rpx;
   background: #f7f5ef;
   text-align: center;
-  padding: 14rpx 0 10rpx;
+  padding: 12rpx 6rpx 10rpx;
   box-sizing: border-box;
 }
 
 .category-icon {
-  font-size: 32rpx;
-  height: 40rpx;
-  line-height: 40rpx;
+  font-size: 28rpx;
+  height: 34rpx;
+  line-height: 34rpx;
 }
 
 .category-name {
-  font-size: 22rpx;
+  font-size: 21rpx;
   color: #4d4a45;
-  margin-top: 8rpx;
+  margin-top: 6rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .category-count {
-  font-size: 30rpx;
+  font-size: 28rpx;
   color: #214f63;
   font-weight: 800;
-  margin-top: 4rpx;
+  margin-top: 2rpx;
+}
+
+.category-empty {
+  margin-top: 22rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.82);
+  color: #8a8178;
+  font-size: 25rpx;
+  text-align: center;
 }
 
 .section-title-row {
-  margin: 42rpx 4rpx 20rpx;
+  margin: 34rpx 4rpx 18rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
