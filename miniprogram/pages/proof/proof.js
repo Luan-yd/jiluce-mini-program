@@ -1,3 +1,5 @@
+const LOGO_PATH = '/images/logo-square.png'
+
 Page({
   data: {
     id: '',
@@ -352,6 +354,15 @@ Page({
     return file.canvasPath || file.drawPath || file.previewPath || file.tempPath || file.path || ''
   },
 
+  getDescriptionText(description) {
+    const text = String(description || '').trim()
+    return text && text !== '暂无备注' ? text : '暂无备注'
+  },
+
+  getDescriptionBoxHeight(lineCount) {
+    return Math.max(88, lineCount * 42 + 56)
+  },
+
   drawProofImage(recordForCanvas) {
     return new Promise((resolve, reject) => {
       const query = wx.createSelectorQuery()
@@ -383,12 +394,17 @@ Page({
             const contentW = 586
             const cardX = 32
             const cardW = width - cardX * 2
+            const descriptionText = this.getDescriptionText(record.description)
 
-            // 估算高度：基础区 + 图片区 + 底部
+            ctx.font = '27px sans-serif'
+            const descriptionLines = this.getWrappedLines(ctx, descriptionText, contentW - 48, 3)
+            const descriptionBoxH = this.getDescriptionBoxHeight(descriptionLines.length)
+
+            // 估算高度：基础区 + 动态备注区 + 图片区 + 底部
             const restCount = Math.max(0, files.length - 1)
             const restRows = restCount > 0 ? Math.ceil(restCount / 2) : 0
 
-            let estimatedHeight = 1500
+            let estimatedHeight = 1260 + descriptionBoxH
 
             if (files.length > 0) {
               estimatedHeight += 390
@@ -402,7 +418,7 @@ Page({
               estimatedHeight += 80
             }
 
-            estimatedHeight = Math.max(1700, estimatedHeight)
+            estimatedHeight = Math.max(1450, estimatedHeight)
 
             canvas.width = width * dpr
             canvas.height = estimatedHeight * dpr
@@ -421,13 +437,7 @@ Page({
             let y = 96
 
             // Logo
-            this.roundRect(ctx, contentX, y, 66, 66, 18, '#294C60')
-
-            ctx.fillStyle = '#FFFFFF'
-            ctx.font = 'bold 34px sans-serif'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText('留', contentX + 33, y + 33)
+            await this.drawLogoToCanvas(canvas, ctx, LOGO_PATH, contentX, y, 66, 66, 18)
 
             ctx.textAlign = 'left'
             ctx.textBaseline = 'alphabetic'
@@ -435,11 +445,11 @@ Page({
             // 品牌
             ctx.fillStyle = '#294C60'
             ctx.font = 'bold 34px sans-serif'
-            ctx.fillText('留痕夹', contentX + 84, y + 28)
+            ctx.fillText('迹录册', contentX + 84, y + 28)
 
             ctx.fillStyle = '#6C6A64'
             ctx.font = '22px sans-serif'
-            ctx.fillText('Experience Proof Card', contentX + 84, y + 58)
+            ctx.fillText('Experience Archive Card', contentX + 84, y + 58)
 
             // 右上角时间
             ctx.fillStyle = '#294C60'
@@ -518,13 +528,14 @@ Page({
 
             y += 28
 
-            this.roundRect(ctx, contentX, y, contentW, 170, 24, '#F8F6F1')
+            const descriptionBoxY = y
+            this.roundRect(ctx, contentX, descriptionBoxY, contentW, descriptionBoxH, 24, '#F8F6F1')
 
             ctx.fillStyle = '#202124'
             ctx.font = '27px sans-serif'
-            this.drawWrappedText(ctx, record.description || '暂无备注', contentX + 24, y + 46, contentW - 48, 42, 3)
+            this.drawWrappedText(ctx, descriptionText, contentX + 24, descriptionBoxY + 46, contentW - 48, 42, 3)
 
-            y += 220
+            y = descriptionBoxY + descriptionBoxH + 50
 
             // 标签
             if (tags.length > 0) {
@@ -640,7 +651,7 @@ Page({
             ctx.font = '20px sans-serif'
             this.drawWrappedText(
               ctx,
-              '本资料包由有迹根据用户上传材料自动整理生成，用于个人经历归档、求职材料整理及经历说明参考。',
+              '本资料包由迹录册根据用户上传材料自动整理生成，用于个人经历归档、求职材料整理及经历说明参考。',
               contentX,
               y,
               contentW,
@@ -686,6 +697,55 @@ Page({
           }
         }
       })
+    })
+  },
+
+  drawLogoToCanvas(canvas, ctx, src, x, y, w, h, r) {
+    return new Promise(resolve => {
+      let finished = false
+
+      const finish = () => {
+        if (!finished) {
+          finished = true
+          resolve()
+        }
+      }
+
+      const fallback = () => {
+        this.roundRect(ctx, x, y, w, h, r, '#294C60')
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = 'bold 32px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('迹', x + w / 2, y + h / 2)
+        ctx.textAlign = 'left'
+        ctx.textBaseline = 'alphabetic'
+        finish()
+      }
+
+      const timer = setTimeout(fallback, 2000)
+      const img = canvas.createImage()
+
+      img.onload = () => {
+        if (finished) return
+        clearTimeout(timer)
+
+        ctx.save()
+        this.roundRectPath(ctx, x, y, w, h, r)
+        ctx.clip()
+        ctx.drawImage(img, x, y, w, h)
+        ctx.restore()
+
+        finish()
+      }
+
+      img.onerror = () => {
+        if (finished) return
+        clearTimeout(timer)
+        fallback()
+      }
+
+      img.src = src
     })
   },
 
@@ -796,7 +856,7 @@ Page({
     ctx.closePath()
   },
 
-  drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+  getWrappedLines(ctx, text, maxWidth, maxLines) {
     const str = String(text || '')
     let line = ''
     let lines = []
@@ -823,6 +883,12 @@ Page({
       const lastIndex = lines.length - 1
       lines[lastIndex] = lines[lastIndex].slice(0, Math.max(0, lines[lastIndex].length - 1)) + '…'
     }
+
+    return lines.length > 0 ? lines : ['']
+  },
+
+  drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+    const lines = this.getWrappedLines(ctx, text, maxWidth, maxLines)
 
     lines.forEach((item, index) => {
       ctx.fillText(item, x, y + index * lineHeight)
