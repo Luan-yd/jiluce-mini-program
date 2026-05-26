@@ -9,10 +9,10 @@
 <view class="proof-card" id="proofContent">
 
   <view class="brand-row">
-    <view class="logo-box">留</view>
+    <image class="logo-box" src="/images/logo-square.png" mode="aspectFill"></image>
     <view>
-      <view class="brand-title">有迹</view>
-      <view class="brand-subtitle">经历资料包</view>
+      <view class="brand-title">迹录册</view>
+      <view class="brand-subtitle">Experience Archive Card</view>
     </view>
   </view>
 
@@ -43,7 +43,7 @@
   <view class="section">
     <view class="section-title">经历说明</view>
     <view class="description">
-      {{record.description}}
+      {{record.description || '暂无备注'}}
     </view>
   </view>
 
