@@ -1,4 +1,5 @@
 const LOGO_PATH = '/images/logo-square.png'
+const FOOTER_COPY = '本资料包由迹录册根据用户上传材料自动整理生成，让每一段经历，都有迹可循。'
 
 Page({
   data: {
@@ -62,7 +63,8 @@ Page({
 
     return {
       ...record,
-      files
+      files,
+      dateRangeText: this.formatDateRange(record)
     }
   },
 
@@ -119,6 +121,14 @@ Page({
     return `${y}-${m}-${d}`
   },
 
+  formatDateRange(record) {
+    if (record && record.endDate && record.endDate !== record.date) {
+      return `${record.date || ''} 至 ${record.endDate}`
+    }
+
+    return (record && record.date) || ''
+  },
+
   goBack() {
     if (this.data.id) {
       wx.redirectTo({
@@ -162,6 +172,8 @@ Page({
       const record = {
         title: rawRecord.title || '未命名记录',
         date: rawRecord.date || '',
+        endDate: rawRecord.endDate || '',
+        dateRangeText: this.formatDateRange(rawRecord),
         category: rawRecord.category || '',
         location: rawRecord.location || '',
         role: rawRecord.role || '',
@@ -340,7 +352,8 @@ Page({
 
     return {
       ...record,
-      files: nextFiles
+      files: nextFiles,
+      dateRangeText: this.formatDateRange(record)
     }
   },
 
@@ -395,6 +408,7 @@ Page({
             const cardX = 32
             const cardW = width - cardX * 2
             const descriptionText = this.getDescriptionText(record.description)
+            const dateRangeText = record.dateRangeText || this.formatDateRange(record) || '未填写日期'
 
             ctx.font = '27px sans-serif'
             const descriptionLines = this.getWrappedLines(ctx, descriptionText, contentW - 48, 3)
@@ -468,7 +482,7 @@ Page({
             y += 24
 
             const metaLine = [
-              record.date || '未填写日期',
+              dateRangeText,
               record.category || '未填写分类',
               record.location || '未填写地点'
             ].join('  ·  ')
@@ -501,7 +515,7 @@ Page({
             ctx.fillText('档案信息', contentX + 24, y + 44)
 
             const infoRows = [
-              ['时间', record.date || '未填写'],
+              ['时间', dateRangeText || '未填写'],
               ['地点', record.location || '未填写地点'],
               ['分类', record.category || '未填写分类'],
               ['身份', record.role || '未填写身份']
@@ -651,7 +665,7 @@ Page({
             ctx.font = '20px sans-serif'
             this.drawWrappedText(
               ctx,
-              '本资料包由迹录册根据用户上传材料自动整理生成，用于个人经历归档、求职材料整理及经历说明参考。',
+              FOOTER_COPY,
               contentX,
               y,
               contentW,
