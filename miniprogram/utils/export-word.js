@@ -1,3 +1,9 @@
+const {
+  getUserCategories,
+  normalizeCategory,
+  normalizeTags
+} = require('./categories')
+
 function normalizePrivacy(value) {
   const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
   return privateValues.includes(value) ? 'private' : 'normal'
@@ -9,6 +15,8 @@ function formatDateRange(record) {
 }
 
 function buildExportRecords(records) {
+  const categories = getUserCategories()
+
   return (Array.isArray(records) ? records : []).map(item => {
     const safeItem = item || {}
     const privacy = normalizePrivacy(safeItem.privacy)
@@ -17,11 +25,11 @@ function buildExportRecords(records) {
       date: safeItem.date || '',
       endDate: safeItem.endDate || '',
       dateRangeText: safeItem.dateRangeText || formatDateRange(safeItem),
-      category: safeItem.category || '其他',
+      category: normalizeCategory(safeItem.category, categories),
       location: safeItem.location || '',
       role: safeItem.role || '',
       description: safeItem.description || '',
-      tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
+      tags: normalizeTags(safeItem.tags),
       privacy,
       proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
       files: Array.isArray(safeItem.files)
