@@ -27,11 +27,16 @@ Page({
       return privateValues.includes(value) ? 'private' : 'normal'
     },
 
+    normalizeCategory(value) {
+      return value || '其他'
+    },
+
     decorateRecord(item) {
       const safeItem = item || {}
       const privacy = this.normalizePrivacy(safeItem.privacy)
       return {
         ...safeItem,
+        category: this.normalizeCategory(safeItem.category),
         privacy,
         isPrivate: privacy === 'private',
         privacyText: privacy === 'private' ? '私密' : '',
@@ -173,15 +178,23 @@ Page({
       this.exportCurrentList()
     },
 
+    goFilterExport() {
+      wx.navigateTo({ url: '/pages/export/export' })
+    },
+
+    goTagManage() {
+      wx.navigateTo({ url: '/pages/tagManage/tagManage' })
+    },
+
     openMoreMenu() {
       wx.showActionSheet({
-        itemList: ['合并导出当前结果', '生成长图资料包', '图片转文字 OCR', '标签管理', '关于迹录册'],
+        itemList: ['筛选并导出', '生成长图资料包', '图片转文字 OCR', '标签管理', '关于迹录册'],
         success: res => {
           const index = res.tapIndex
-          if (index === 0) this.exportCurrentList()
+          if (index === 0) this.goFilterExport()
           if (index === 1) wx.showToast({ title: '请进入某条记录详情页生成资料包', icon: 'none' })
           if (index === 2) wx.showToast({ title: 'OCR功能下一步开发', icon: 'none' })
-          if (index === 3) wx.showToast({ title: '标签管理功能开发中', icon: 'none' })
+          if (index === 3) this.goTagManage()
           if (index === 4) {
             wx.showModal({
               title: '关于迹录册',
