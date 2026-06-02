@@ -46,6 +46,12 @@ Page({
     return Array.isArray(value) ? value.filter(Boolean) : []
   },
 
+  getManagedCategories() {
+    const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
+    const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+    return categories.includes('其他') ? categories : [...categories, '其他']
+  },
+
   refreshPageData() {
     const allRecords = this.getAllRecords()
     const tagMap = {}
@@ -53,8 +59,7 @@ Page({
       record.tags.forEach(tag => { tagMap[tag] = true })
     })
 
-    const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-    const managedCategories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+    const managedCategories = this.getManagedCategories()
     const categories = ['全部', ...managedCategories]
     const tags = Object.keys(tagMap)
     const tagOptions = tags.length ? ['全部标签', ...tags] : ['暂无标签']
