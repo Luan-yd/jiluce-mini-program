@@ -1,0 +1,91 @@
+.tag-page {
+  min-height: 100vh;
+  background: #F8F6F1;
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+}
+
+.back {
+  font-size: 28rpx;
+  color: #294C60;
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #202124;
+}
+
+.nav-placeholder {
+  width: 88rpx;
+}
+
+.summary-card {
+  background: #FFFFFF;
+  border: 1rpx solid #E5E1DA;
+  border-radius: 24rpx;
+  padding: 26rpx;
+  margin-bottom: 24rpx;
+  box-sizing: border-box;
+}
+
+.summary-title {
+  font-size: 30rpx;
+  color: #202124;
+  font-weight: 800;
+  margin-bottom: 8rpx;
+}
+
+.summary-desc {
+  font-size: 24rpx;
+  color: #77746E;
+  line-height: 1.5;
+}
+
+.tag-item {
+  background: #FFFFFF;
+  border: 1rpx solid #E5E1DA;
+  border-radius: 22rpx;
+  padding: 24rpx;
+  margin-bottom: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.tag-name {
+  font-size: 30rpx;
+  color: #202124;
+  font-weight: 800;
+  margin-bottom: 8rpx;
+}
+
+.tag-count {
+  font-size: 23rpx;
+  color: #77746E;
+}
+
+.delete-btn {
+  flex-shrink: 0;
+  padding: 12rpx 22rpx;
+  border-radius: 999rpx;
+  background: #F8E6E0;
+  color: #A23B2A;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.empty {
+  margin-top: 160rpx;
+  text-align: center;
+  color: #77746E;
+  font-size: 28rpx;
+}
