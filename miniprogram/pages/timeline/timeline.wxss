@@ -238,6 +238,20 @@
     border-radius: 20rpx;
     background: #F1F0EC;
   }
+
+  .load-more {
+    width: 240rpx;
+    height: 72rpx;
+    line-height: 72rpx;
+    text-align: center;
+    margin: 10rpx auto 36rpx;
+    border-radius: 999rpx;
+    background: #FFFFFF;
+    color: #294C60;
+    border: 1rpx solid #E5E1DA;
+    font-size: 25rpx;
+    font-weight: 700;
+  }
   
   .empty {
     margin-top: 150rpx;
