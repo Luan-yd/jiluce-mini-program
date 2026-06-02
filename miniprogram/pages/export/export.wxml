@@ -1,51 +1,55 @@
 <view class="export-page">
   <view class="top-nav">
     <view class="back" bindtap="goBack">‹ 返回</view>
-    <view class="nav-title">筛选合并导出</view>
+    <view class="nav-title">筛选并导出</view>
     <view class="nav-placeholder"></view>
   </view>
 
-  <view class="mode-row">
-    <view
-      wx:for="{{modes}}"
-      wx:key="key"
-      class="mode-item {{mode === item.key ? 'active' : ''}}"
-      bindtap="changeMode"
-      data-mode="{{item.key}}"
-    >{{item.label}}</view>
+  <view class="filter-card">
+    <view class="filter-label">分类</view>
+    <picker mode="selector" range="{{categories}}" bindchange="onCategoryChange">
+      <view class="picker-value">{{selectedCategory || '全部'}}</view>
+    </picker>
   </view>
 
-  <view class="filter-card" wx:if="{{mode === 'date'}}">
-    <view class="date-type-row">
-      <view class="date-type {{dateType === 'day' ? 'active' : ''}}" bindtap="changeDateType" data-type="day">某一天</view>
-      <view class="date-type {{dateType === 'range' ? 'active' : ''}}" bindtap="changeDateType" data-type="range">时间范围</view>
+  <view class="filter-card">
+    <view class="filter-label">标签</view>
+    <picker mode="selector" range="{{tagOptions}}" bindchange="onTagChange">
+      <view class="picker-value {{selectedTag === '暂无标签' ? 'placeholder' : ''}}">{{selectedTag || '全部标签'}}</view>
+    </picker>
+  </view>
+
+  <view class="filter-card">
+    <view class="filter-label">时间</view>
+    <view class="time-row">
+      <view
+        wx:for="{{timeFilters}}"
+        wx:key="key"
+        class="time-filter {{selectedTime === item.key ? 'active' : ''}}"
+        bindtap="changeTimeFilter"
+        data-key="{{item.key}}"
+      >{{item.label}}</view>
     </view>
 
-    <picker wx:if="{{dateType === 'day'}}" mode="date" value="{{exportDate}}" bindchange="onExportDateChange">
-      <view class="picker-value {{exportDate ? '' : 'placeholder'}}">{{exportDate || '请选择日期'}}</view>
-    </picker>
-
-    <view wx:else class="range-row">
-      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
-        <view class="picker-value {{startDate ? '' : 'placeholder'}}">{{startDate || '开始日期'}}</view>
+    <view class="range-row" wx:if="{{selectedTime === 'custom'}}">
+      <picker mode="date" value="{{customStartDate}}" bindchange="onCustomStartChange">
+        <view class="picker-value {{customStartDate ? '' : 'placeholder'}}">{{customStartDate || '开始日期'}}</view>
       </picker>
       <view class="range-separator">至</view>
-      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
-        <view class="picker-value {{endDate ? '' : 'placeholder'}}">{{endDate || '结束日期'}}</view>
+      <picker mode="date" value="{{customEndDate}}" bindchange="onCustomEndChange">
+        <view class="picker-value {{customEndDate ? '' : 'placeholder'}}">{{customEndDate || '结束日期'}}</view>
       </picker>
     </view>
   </view>
 
-  <view class="filter-card" wx:if="{{mode === 'tag'}}">
-    <picker mode="selector" range="{{tags}}" bindchange="onTagChange">
-      <view class="picker-value {{selectedTag ? '' : 'placeholder'}}">{{selectedTag || '暂无可选标签'}}</view>
-    </picker>
-  </view>
-
-  <view class="filter-card" wx:if="{{mode === 'category'}}">
-    <picker mode="selector" range="{{categories}}" bindchange="onCategoryChange">
-      <view class="picker-value {{selectedCategory ? '' : 'placeholder'}}">{{selectedCategory || '暂无可选分类'}}</view>
-    </picker>
+  <view class="filter-card">
+    <view class="filter-label">关键词</view>
+    <input
+      class="keyword-input"
+      placeholder="搜索标题、地点、备注、材料说明"
+      value="{{keyword}}"
+      bindinput="onKeywordInput"
+    />
   </view>
 
   <view class="result-header">
@@ -53,10 +57,10 @@
       <view class="result-title">筛选结果</view>
       <view class="condition-text">{{conditionText}}</view>
     </view>
-    <view class="result-count">{{records.length}}条</view>
+    <view class="result-count">{{resultCount}}条</view>
   </view>
 
-  <view class="empty" wx:if="{{records.length === 0}}">暂无可导出的记录</view>
+  <view class="empty" wx:if="{{records.length === 0}}">暂无符合条件的记录</view>
 
   <view wx:else class="record-list">
     <view
@@ -70,10 +74,11 @@
         <view class="record-title">{{item.title}}</view>
         <view class="privacy-badge" wx:if="{{item.isPrivate}}">私密</view>
       </view>
-      <view class="record-meta">{{item.dateRangeText}}｜{{item.category}}｜{{item.location}}</view>
+      <view class="record-meta">{{item.dateRangeText}}｜{{item.category || '其他'}}｜{{item.location}}</view>
       <view class="tag-row" wx:if="{{item.tags && item.tags.length > 0}}">
         <view wx:for="{{item.tags}}" wx:key="*this" class="tag">{{item}}</view>
       </view>
+      <view class="no-tag" wx:else>暂无标签</view>
     </view>
   </view>
 
