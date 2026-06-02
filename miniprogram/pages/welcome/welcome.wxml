@@ -2,7 +2,8 @@
 
 <view class="top-area">
   <view class="logo-box">
-    <text class="logo-text"></text>
+    <image class="logo-img" src="/images/logo-square.png" mode="aspectFill"></image>
+    <text class="logo-text">迹</text>
   </view>
 
   <view class="title">迹录册</view>
