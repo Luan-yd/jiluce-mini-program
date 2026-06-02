@@ -43,13 +43,23 @@ Page({
     this.loadHomeData()
   },
 
+  normalizeCategory(value) {
+    return value || '其他'
+  },
+
   getCategories() {
     const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-    return Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
+    const customCategories = Array.isArray(cachedCategories) ? cachedCategories : []
+    return [...new Set([...DEFAULT_CATEGORIES, ...customCategories])]
   },
 
   loadHomeData() {
-    const records = wx.getStorageSync('records') || []
+    const rawRecords = wx.getStorageSync('records') || []
+    const records = (Array.isArray(rawRecords) ? rawRecords : []).map(item => ({
+      ...(item || {}),
+      category: this.normalizeCategory(item && item.category),
+      tags: Array.isArray(item && item.tags) ? item.tags : []
+    }))
 
     const recordCount = records.length
 
