@@ -2,7 +2,27 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 18rpx;
     margin-bottom: 28rpx;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14rpx;
+  }
+
+  .merge-export-entry {
+    height: 68rpx;
+    line-height: 68rpx;
+    padding: 0 24rpx;
+    border-radius: 999rpx;
+    background: #294C60;
+    color: #FFFFFF;
+    font-size: 24rpx;
+    font-weight: 800;
+    box-shadow: 0 6rpx 18rpx rgba(41, 76, 96, 0.14);
+    white-space: nowrap;
   }
   
   .more {
