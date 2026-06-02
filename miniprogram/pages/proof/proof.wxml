@@ -108,6 +108,10 @@
   <view class="action-btn" bindtap="generateWord">导出 Word</view>
 </view>
 
+<view style="padding: 0 32rpx 28rpx; color: #99938A; font-size: 22rpx; line-height: 1.5;">
+  Word 会先生成到云存储再下载打开，请定期清理云存储 word 目录中的历史导出文件。
+</view>
+
 <canvas
   type="2d"
   id="proofCanvas"
