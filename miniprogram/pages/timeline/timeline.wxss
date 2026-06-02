@@ -70,6 +70,10 @@
     font-weight: 700;
   }
 
+  .merge-export-btn.disabled {
+    opacity: 0.55;
+  }
+
   .filter-row {
     display: flex;
     flex-wrap: wrap;
