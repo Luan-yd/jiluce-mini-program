@@ -6,7 +6,8 @@
     "pages/add/add",
     "pages/detail/detail",
     "pages/proof/proof",
-    "pages/timeline/timeline"
+    "pages/timeline/timeline",
+    "pages/export/export"
   ],
   "window": {
     "navigationBarTitleText": "迹录册",
