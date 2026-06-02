@@ -10,7 +10,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 36rpx;
+    margin-bottom: 28rpx;
   }
   
   .page-title {
@@ -33,6 +33,66 @@
     color: #294C60;
     font-size: 24rpx;
     font-weight: 700;
+  }
+
+  .filter-panel {
+    background: #FFFFFF;
+    border-radius: 24rpx;
+    border: 1rpx solid #E5E1DA;
+    padding: 22rpx;
+    margin-bottom: 34rpx;
+    box-sizing: border-box;
+  }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14rpx;
+  }
+
+  .filter {
+    padding: 10rpx 20rpx;
+    border-radius: 999rpx;
+    background: #F8F6F1;
+    color: #555555;
+    font-size: 23rpx;
+    border: 1rpx solid #E5E1DA;
+  }
+
+  .filter.active {
+    background: #294C60;
+    color: #FFFFFF;
+    border-color: #294C60;
+    font-weight: 700;
+  }
+
+  .custom-row {
+    display: flex;
+    align-items: center;
+    gap: 14rpx;
+    margin-top: 18rpx;
+  }
+
+  .date-picker {
+    min-width: 210rpx;
+    height: 68rpx;
+    line-height: 68rpx;
+    padding: 0 20rpx;
+    border-radius: 18rpx;
+    background: #F8F6F1;
+    border: 1rpx solid #E5E1DA;
+    color: #202124;
+    font-size: 24rpx;
+    box-sizing: border-box;
+  }
+
+  .date-picker.placeholder {
+    color: #999999;
+  }
+
+  .date-separator {
+    color: #77746E;
+    font-size: 24rpx;
   }
   
   .month-group {
@@ -93,12 +153,28 @@
     align-items: flex-start;
     gap: 20rpx;
   }
+
+  .record-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+  }
   
   .record-title {
     font-size: 30rpx;
     font-weight: 800;
     color: #202124;
     line-height: 1.4;
+  }
+
+  .privacy-badge {
+    flex-shrink: 0;
+    padding: 5rpx 12rpx;
+    border-radius: 999rpx;
+    background: #F8E6E0;
+    color: #A23B2A;
+    font-size: 20rpx;
+    font-weight: 700;
   }
   
   .record-meta {
@@ -164,7 +240,7 @@
   }
   
   .empty {
-    margin-top: 180rpx;
+    margin-top: 150rpx;
     text-align: center;
   }
   
