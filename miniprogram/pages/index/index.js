@@ -1,3 +1,5 @@
+const { exportRecordsToWord } = require('../../utils/export-word')
+
 const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
 const CATEGORY_STORAGE_KEY = 'customCategories'
 const PAGE_SIZE = 10
@@ -12,7 +14,8 @@ Page({
       filteredRecords: [],
       records: [],
       pageIndex: 1,
-      hasMore: false
+      hasMore: false,
+      isGenerating: false
     },
   
     onShow() {
@@ -25,13 +28,17 @@ Page({
     },
 
     decorateRecord(item) {
-      const privacy = this.normalizePrivacy(item.privacy)
+      const safeItem = item || {}
+      const privacy = this.normalizePrivacy(safeItem.privacy)
       return {
-        ...item,
+        ...safeItem,
         privacy,
         isPrivate: privacy === 'private',
         privacyText: privacy === 'private' ? '私密' : '',
-        dateRangeText: this.formatDateRange(item)
+        tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
+        proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
+        files: Array.isArray(safeItem.files) ? safeItem.files : [],
+        dateRangeText: this.formatDateRange(safeItem)
       }
     },
 
@@ -44,7 +51,8 @@ Page({
     loadRecords() {
       const filters = this.getCategoryFilters()
       const currentFilter = filters.includes(this.data.currentFilter) ? this.data.currentFilter : '全部'
-      const records = (wx.getStorageSync('records') || []).map(item => this.decorateRecord(item))
+      const rawRecords = wx.getStorageSync('records') || []
+      const records = (Array.isArray(rawRecords) ? rawRecords : []).map(item => this.decorateRecord(item))
   
       this.setData({ filters, currentFilter, allRecords: records }, () => {
         this.filterRecords()
@@ -52,21 +60,21 @@ Page({
     },
 
     formatDateRange(record) {
-      if (record.endDate && record.endDate !== record.date) {
+      if (record && record.endDate && record.endDate !== record.date) {
         return `${record.date} 至 ${record.endDate}`
       }
 
-      return record.date || ''
+      return (record && record.date) || ''
     },
   
     onSearchInput(e) {
-      const keyword = e.detail.value.trim()
+      const keyword = (e.detail.value || '').trim()
       this.setData({ keyword, pageIndex: 1 })
       this.filterRecords()
     },
   
     changeFilter(e) {
-      const name = e.currentTarget.dataset.name
+      const name = e.currentTarget.dataset.name || '全部'
       this.setData({ currentFilter: name, pageIndex: 1 })
       this.filterRecords()
     },
@@ -74,7 +82,7 @@ Page({
     filterRecords() {
       const { keyword, currentFilter, allRecords } = this.data
   
-      let list = allRecords
+      let list = Array.isArray(allRecords) ? allRecords : []
   
       if (currentFilter !== '全部') {
         list = list.filter(item => item.category === currentFilter)
@@ -120,21 +128,57 @@ Page({
         this.updateVisibleRecords()
       })
     },
+
+    getCurrentListExportCondition() {
+      const parts = [`导出分类：${this.data.currentFilter || '全部'}`]
+      if (this.data.keyword) parts.push(`导出关键词：${this.data.keyword}`)
+      return parts.join('，')
+    },
+
+    async exportCurrentList() {
+      if (this.data.isGenerating) return
+      this.setData({ isGenerating: true })
+      await exportRecordsToWord(
+        this.data.filteredRecords,
+        {
+          title: '经历记录合并导出',
+          condition: this.getCurrentListExportCondition(),
+          type: 'category'
+        },
+        { emptyText: '当前分类下暂无可导出的记录' }
+      )
+      this.setData({ isGenerating: false })
+    },
+
+    async exportSearchResults() {
+      if (this.data.isGenerating) return
+      this.setData({ isGenerating: true })
+      await exportRecordsToWord(
+        this.data.filteredRecords,
+        {
+          title: '经历记录合并导出',
+          condition: `导出关键词：${this.data.keyword}`,
+          type: 'search'
+        },
+        { emptyText: '当前搜索结果暂无可导出的记录' }
+      )
+      this.setData({ isGenerating: false })
+    },
   
     goTimeline() {
       wx.navigateTo({ url: '/pages/timeline/timeline' })
     },
 
     goMergeExport() {
-      wx.navigateTo({ url: '/pages/export/export' })
+      this.exportCurrentList()
     },
 
     openMoreMenu() {
       wx.showActionSheet({
-        itemList: ['筛选合并导出', '生成长图资料包', '图片转文字 OCR', '标签管理', '关于迹录册'],
+        itemList: ['合并导出当前结果', '生成长图资料包', '图片转文字 OCR', '标签管理', '关于迹录册'],
         success: res => {
           const index = res.tapIndex
-          if (index === 0) this.goMergeExport()
+          if (index === 0) this.exportCurrentList()
           if (index === 1) wx.showToast({ title: '请进入某条记录详情页生成资料包', icon: 'none' })
           if (index === 2) wx.showToast({ title: 'OCR功能下一步开发', icon: 'none' })
           if (index === 3) wx.showToast({ title: '标签管理功能开发中', icon: 'none' })
