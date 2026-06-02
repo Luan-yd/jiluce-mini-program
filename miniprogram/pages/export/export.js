@@ -18,12 +18,12 @@ Page({
     selectedTag: '',
     selectedCategory: '',
     records: [],
-    conditionText: '请选择筛选条件'
+    conditionText: '请选择筛选条件',
+    isGenerating: false
   },
 
   onShow() {
-    this.initOptions()
-    this.applyFilter()
+    this.refreshPageData()
   },
 
   normalizePrivacy(value) {
@@ -31,104 +31,153 @@ Page({
     return privateValues.includes(value) ? 'private' : 'normal'
   },
 
-  initOptions() {
-    const records = wx.getStorageSync('records') || []
+  refreshPageData() {
+    const rawRecords = wx.getStorageSync('records') || []
+    const sourceRecords = Array.isArray(rawRecords) ? rawRecords : []
     const tagMap = {}
 
-    records.forEach(record => {
-      ;(record.tags || []).forEach(tag => {
+    sourceRecords.forEach(record => {
+      ;((record && record.tags) || []).forEach(tag => {
         if (tag) tagMap[tag] = true
       })
     })
 
     const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-    const categories = Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
+    const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
     const tags = Object.keys(tagMap)
-
-    this.setData({
+    const nextState = {
+      mode: this.data.mode || 'date',
+      dateType: this.data.dateType || 'day',
+      exportDate: this.data.exportDate || '',
+      startDate: this.data.startDate || '',
+      endDate: this.data.endDate || '',
       tags,
       categories,
-      selectedTag: this.data.selectedTag || tags[0] || '',
-      selectedCategory: this.data.selectedCategory || categories[0] || ''
+      selectedTag: tags.includes(this.data.selectedTag) ? this.data.selectedTag : tags[0] || '',
+      selectedCategory: categories.includes(this.data.selectedCategory) ? this.data.selectedCategory : categories[0] || ''
+    }
+    const filterResult = this.getFilteredRecords(sourceRecords, nextState)
+
+    this.setData({
+      ...nextState,
+      records: filterResult.records,
+      conditionText: filterResult.conditionText
     })
   },
 
   changeMode(e) {
-    this.setData({ mode: e.currentTarget.dataset.mode }, () => this.applyFilter())
+    const mode = e.currentTarget.dataset.mode || 'date'
+    this.updateFilter({ mode })
   },
 
   changeDateType(e) {
-    this.setData({ dateType: e.currentTarget.dataset.type }, () => this.applyFilter())
+    const dateType = e.currentTarget.dataset.type || 'day'
+    this.updateFilter({ dateType })
   },
 
   onExportDateChange(e) {
-    this.setData({ exportDate: e.detail.value }, () => this.applyFilter())
+    this.updateFilter({ exportDate: e.detail.value || '' })
   },
 
   onStartDateChange(e) {
-    const start = e.detail.value
+    const start = e.detail.value || ''
     if (this.data.endDate && start > this.data.endDate) {
       wx.showToast({ title: '开始日期不能晚于结束日期', icon: 'none' })
       return
     }
-    this.setData({ startDate: start }, () => this.applyFilter())
+    this.updateFilter({ startDate: start })
   },
 
   onEndDateChange(e) {
-    const end = e.detail.value
+    const end = e.detail.value || ''
     if (this.data.startDate && end < this.data.startDate) {
       wx.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
       return
     }
-    this.setData({ endDate: end }, () => this.applyFilter())
+    this.updateFilter({ endDate: end })
   },
 
   onTagChange(e) {
     const index = Number(e.detail.value)
-    this.setData({ selectedTag: this.data.tags[index] || '' }, () => this.applyFilter())
+    this.updateFilter({ selectedTag: this.data.tags[index] || '' })
   },
 
   onCategoryChange(e) {
     const index = Number(e.detail.value)
-    this.setData({ selectedCategory: this.data.categories[index] || '' }, () => this.applyFilter())
+    this.updateFilter({ selectedCategory: this.data.categories[index] || '' })
   },
 
-  applyFilter() {
-    const allRecords = (wx.getStorageSync('records') || []).map(item => {
-      const privacy = this.normalizePrivacy(item.privacy)
-      return { ...item, privacy, isPrivate: privacy === 'private', dateRangeText: this.formatDateRange(item) }
+  updateFilter(patch) {
+    const nextState = {
+      mode: this.data.mode,
+      dateType: this.data.dateType,
+      exportDate: this.data.exportDate,
+      startDate: this.data.startDate,
+      endDate: this.data.endDate,
+      tags: Array.isArray(this.data.tags) ? this.data.tags : [],
+      categories: Array.isArray(this.data.categories) ? this.data.categories : DEFAULT_CATEGORIES,
+      selectedTag: this.data.selectedTag,
+      selectedCategory: this.data.selectedCategory,
+      ...patch
+    }
+    const rawRecords = wx.getStorageSync('records') || []
+    const sourceRecords = Array.isArray(rawRecords) ? rawRecords : []
+    const filterResult = this.getFilteredRecords(sourceRecords, nextState)
+
+    this.setData({
+      ...patch,
+      records: filterResult.records,
+      conditionText: filterResult.conditionText
+    })
+  },
+
+  getFilteredRecords(sourceRecords, state) {
+    const allRecords = (Array.isArray(sourceRecords) ? sourceRecords : []).map(item => {
+      const safeItem = item || {}
+      const privacy = this.normalizePrivacy(safeItem.privacy)
+      return {
+        ...safeItem,
+        privacy,
+        isPrivate: privacy === 'private',
+        dateRangeText: this.formatDateRange(safeItem),
+        tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
+        proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
+        files: Array.isArray(safeItem.files) ? safeItem.files : []
+      }
     })
 
     let list = []
     let conditionText = ''
 
-    if (this.data.mode === 'date') {
-      if (this.data.dateType === 'day') {
-        conditionText = this.data.exportDate ? `日期：${this.data.exportDate}` : '请选择某一天'
-        list = this.data.exportDate ? allRecords.filter(item => this.isRecordInRange(item, this.data.exportDate, this.data.exportDate)) : []
+    if (state.mode === 'date') {
+      if (state.dateType === 'day') {
+        conditionText = state.exportDate ? `日期：${state.exportDate}` : '请选择某一天'
+        list = state.exportDate ? allRecords.filter(item => this.isRecordInRange(item, state.exportDate, state.exportDate)) : []
       } else {
-        conditionText = this.data.startDate || this.data.endDate ? `日期范围：${this.data.startDate || '不限'} 至 ${this.data.endDate || '不限'}` : '请选择时间范围'
-        list = this.data.startDate || this.data.endDate ? allRecords.filter(item => this.isRecordInRange(item, this.data.startDate, this.data.endDate)) : []
+        conditionText = state.startDate || state.endDate ? `日期范围：${state.startDate || '不限'} 至 ${state.endDate || '不限'}` : '请选择时间范围'
+        list = state.startDate || state.endDate ? allRecords.filter(item => this.isRecordInRange(item, state.startDate, state.endDate)) : []
       }
     }
 
-    if (this.data.mode === 'tag') {
-      conditionText = this.data.selectedTag ? `标签：${this.data.selectedTag}` : '暂无可选标签'
-      list = this.data.selectedTag ? allRecords.filter(item => (item.tags || []).includes(this.data.selectedTag)) : []
+    if (state.mode === 'tag') {
+      conditionText = state.selectedTag ? `标签：${state.selectedTag}` : '暂无可选标签'
+      list = state.selectedTag ? allRecords.filter(item => item.tags.includes(state.selectedTag)) : []
     }
 
-    if (this.data.mode === 'category') {
-      conditionText = this.data.selectedCategory ? `分类：${this.data.selectedCategory}` : '暂无可选分类'
-      list = this.data.selectedCategory ? allRecords.filter(item => item.category === this.data.selectedCategory) : []
+    if (state.mode === 'category') {
+      conditionText = state.selectedCategory ? `分类：${state.selectedCategory}` : '暂无可选分类'
+      list = state.selectedCategory ? allRecords.filter(item => item.category === state.selectedCategory) : []
     }
 
-    list = list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
-    this.setData({ records: list, conditionText })
+    return {
+      records: list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)),
+      conditionText
+    }
   },
 
   isRecordInRange(record, start, end) {
-    const recordStart = record.date || ''
-    const recordEnd = record.endDate || record.date || ''
+    const recordStart = (record && record.date) || ''
+    const recordEnd = (record && (record.endDate || record.date)) || ''
     if (!recordStart) return false
     if (start && recordEnd < start) return false
     if (end && recordStart > end) return false
@@ -136,8 +185,8 @@ Page({
   },
 
   formatDateRange(record) {
-    if (record.endDate && record.endDate !== record.date) return `${record.date} 至 ${record.endDate}`
-    return record.date || ''
+    if (record && record.endDate && record.endDate !== record.date) return `${record.date} 至 ${record.endDate}`
+    return (record && record.date) || ''
   },
 
   goBack() { wx.navigateBack() },
@@ -147,7 +196,8 @@ Page({
   },
 
   confirmPrivateExport(callback) {
-    const hasPrivate = this.data.records.some(item => item.isPrivate)
+    const records = Array.isArray(this.data.records) ? this.data.records : []
+    const hasPrivate = records.some(item => item && item.isPrivate)
     if (!hasPrivate) {
       callback()
       return
@@ -163,10 +213,12 @@ Page({
   },
 
   exportWord() {
-    if (!this.data.records.length) {
+    const records = Array.isArray(this.data.records) ? this.data.records : []
+    if (!records.length) {
       wx.showToast({ title: '暂无可导出的记录', icon: 'none' })
       return
     }
+    if (this.data.isGenerating) return
     this.confirmPrivateExport(() => this.generateWord())
   },
 
@@ -180,10 +232,12 @@ Page({
   },
 
   async generateWord() {
+    if (this.data.isGenerating) return
+    this.setData({ isGenerating: true })
     wx.showLoading({ title: '生成Word中…', mask: true })
 
     try {
-      const records = this.data.records.map(item => ({
+      const records = (Array.isArray(this.data.records) ? this.data.records : []).map(item => ({
         title: item.title || '未命名记录',
         date: item.date || '',
         endDate: item.endDate || '',
@@ -193,7 +247,7 @@ Page({
         role: item.role || '',
         description: item.description || '',
         tags: Array.isArray(item.tags) ? item.tags : [],
-        privacy: item.privacy,
+        privacy: item.privacy || 'normal',
         proofSummary: Array.isArray(item.proofSummary) ? item.proofSummary : [],
         files: Array.isArray(item.files)
           ? item.files.map(file => ({
@@ -218,7 +272,8 @@ Page({
       wx.hideLoading()
 
       if (!result.result || !result.result.success) {
-        wx.showToast({ title: result.result?.error || '生成失败', icon: 'none' })
+        const errorText = result.result && result.result.error ? result.result.error : '生成失败'
+        wx.showToast({ title: errorText, icon: 'none' })
         return
       }
 
@@ -240,6 +295,8 @@ Page({
       wx.hideLoading()
       console.error('合并导出失败：', err)
       wx.showToast({ title: '生成失败，请重试', icon: 'none' })
+    } finally {
+      this.setData({ isGenerating: false })
     }
   }
 })
