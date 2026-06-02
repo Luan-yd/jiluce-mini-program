@@ -128,10 +128,33 @@ Page({
         urls
       })
     },
+
+    confirmPrivateExport(callback) {
+      const record = this.data.record
+
+      if (!record || !record.isPrivate) {
+        callback()
+        return
+      }
+
+      wx.showModal({
+        title: '导出确认',
+        content: '当前导出内容包含私密记录，是否确认继续导出？',
+        confirmText: '继续导出',
+        cancelText: '取消',
+        success: res => {
+          if (res.confirm) {
+            callback()
+          }
+        }
+      })
+    },
   
     generateProof() {
+      this.confirmPrivateExport(() => {
         wx.navigateTo({
           url: `/pages/proof/proof?id=${this.data.record.id}`
         })
-      }
+      })
+    }
   })
