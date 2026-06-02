@@ -148,18 +148,13 @@
 <view class="section-title">隐私设置</view>
 <radio-group bindchange="onPrivacyChange">
   <label class="privacy-item">
-    <radio value="exportable" checked="{{form.privacy === 'exportable'}}" color="#294C60" />
-    <text>可导出，用于生成资料包</text>
+    <radio value="normal" checked="{{form.privacy === 'normal'}}" color="#294C60" />
+    <text>普通记录</text>
   </label>
 
   <label class="privacy-item">
     <radio value="private" checked="{{form.privacy === 'private'}}" color="#294C60" />
-    <text>私密，仅自己可见</text>
-  </label>
-
-  <label class="privacy-item">
-    <radio value="locked" checked="{{form.privacy === 'locked'}}" color="#294C60" />
-    <text>加密，导出需确认</text>
+    <text>私密记录</text>
   </label>
 </radio-group>
 
