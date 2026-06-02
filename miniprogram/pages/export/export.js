@@ -1,7 +1,6 @@
 const { exportRecordsToWord } = require('../../utils/export-word')
+const { getUserCategories, normalizeCategory, normalizeTags } = require('../../utils/categories')
 
-const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
-const CATEGORY_STORAGE_KEY = 'customCategories'
 const TIME_FILTERS = [
   { key: 'all', label: '全部' },
   { key: 'today', label: '今天' },
@@ -13,7 +12,7 @@ const TIME_FILTERS = [
 
 Page({
   data: {
-    categories: ['全部', ...DEFAULT_CATEGORIES],
+    categories: ['全部', ...getUserCategories()],
     tags: [],
     tagOptions: ['全部标签'],
     timeFilters: TIME_FILTERS,
@@ -38,20 +37,6 @@ Page({
     return privateValues.includes(value) ? 'private' : 'normal'
   },
 
-  normalizeCategory(value) {
-    return value || '其他'
-  },
-
-  normalizeTags(value) {
-    return Array.isArray(value) ? value.filter(Boolean) : []
-  },
-
-  getManagedCategories() {
-    const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-    const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
-    return categories.includes('其他') ? categories : [...categories, '其他']
-  },
-
   refreshPageData() {
     const allRecords = this.getAllRecords()
     const tagMap = {}
@@ -59,8 +44,7 @@ Page({
       record.tags.forEach(tag => { tagMap[tag] = true })
     })
 
-    const managedCategories = this.getManagedCategories()
-    const categories = ['全部', ...managedCategories]
+    const categories = ['全部', ...getUserCategories()]
     const tags = Object.keys(tagMap)
     const tagOptions = tags.length ? ['全部标签', ...tags] : ['暂无标签']
     const selectedCategory = categories.includes(this.data.selectedCategory) ? this.data.selectedCategory : '全部'
@@ -87,17 +71,17 @@ Page({
   },
 
   getAllRecords() {
+    const categories = getUserCategories()
     const rawRecords = wx.getStorageSync('records') || []
     return (Array.isArray(rawRecords) ? rawRecords : []).map(item => {
       const safeItem = item || {}
       const privacy = this.normalizePrivacy(safeItem.privacy)
-      const category = this.normalizeCategory(safeItem.category)
       return {
         ...safeItem,
-        category,
+        category: normalizeCategory(safeItem.category, categories),
         privacy,
         isPrivate: privacy === 'private',
-        tags: this.normalizeTags(safeItem.tags),
+        tags: normalizeTags(safeItem.tags),
         proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
         files: Array.isArray(safeItem.files) ? safeItem.files : [],
         dateRangeText: this.formatDateRange(safeItem)
