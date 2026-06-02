@@ -17,7 +17,7 @@ function buildExportRecords(records) {
       date: safeItem.date || '',
       endDate: safeItem.endDate || '',
       dateRangeText: safeItem.dateRangeText || formatDateRange(safeItem),
-      category: safeItem.category || '',
+      category: safeItem.category || '其他',
       location: safeItem.location || '',
       role: safeItem.role || '',
       description: safeItem.description || '',
