@@ -1,0 +1,81 @@
+<view class="export-page">
+  <view class="top-nav">
+    <view class="back" bindtap="goBack">‹ 返回</view>
+    <view class="nav-title">筛选合并导出</view>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <view class="mode-row">
+    <view
+      wx:for="{{modes}}"
+      wx:key="key"
+      class="mode-item {{mode === item.key ? 'active' : ''}}"
+      bindtap="changeMode"
+      data-mode="{{item.key}}"
+    >{{item.label}}</view>
+  </view>
+
+  <view class="filter-card" wx:if="{{mode === 'date'}}">
+    <view class="date-type-row">
+      <view class="date-type {{dateType === 'day' ? 'active' : ''}}" bindtap="changeDateType" data-type="day">某一天</view>
+      <view class="date-type {{dateType === 'range' ? 'active' : ''}}" bindtap="changeDateType" data-type="range">时间范围</view>
+    </view>
+
+    <picker wx:if="{{dateType === 'day'}}" mode="date" value="{{exportDate}}" bindchange="onExportDateChange">
+      <view class="picker-value {{exportDate ? '' : 'placeholder'}}">{{exportDate || '请选择日期'}}</view>
+    </picker>
+
+    <view wx:else class="range-row">
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="picker-value {{startDate ? '' : 'placeholder'}}">{{startDate || '开始日期'}}</view>
+      </picker>
+      <view class="range-separator">至</view>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="picker-value {{endDate ? '' : 'placeholder'}}">{{endDate || '结束日期'}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="filter-card" wx:if="{{mode === 'tag'}}">
+    <picker mode="selector" range="{{tags}}" bindchange="onTagChange">
+      <view class="picker-value {{selectedTag ? '' : 'placeholder'}}">{{selectedTag || '暂无可选标签'}}</view>
+    </picker>
+  </view>
+
+  <view class="filter-card" wx:if="{{mode === 'category'}}">
+    <picker mode="selector" range="{{categories}}" bindchange="onCategoryChange">
+      <view class="picker-value {{selectedCategory ? '' : 'placeholder'}}">{{selectedCategory || '暂无可选分类'}}</view>
+    </picker>
+  </view>
+
+  <view class="result-header">
+    <view>
+      <view class="result-title">筛选结果</view>
+      <view class="condition-text">{{conditionText}}</view>
+    </view>
+    <view class="result-count">{{records.length}}条</view>
+  </view>
+
+  <view class="empty" wx:if="{{records.length === 0}}">暂无可导出的记录</view>
+
+  <view wx:else class="record-list">
+    <view
+      wx:for="{{records}}"
+      wx:key="id"
+      class="record-card"
+      bindtap="goDetail"
+      data-id="{{item.id}}"
+    >
+      <view class="record-title-row">
+        <view class="record-title">{{item.title}}</view>
+        <view class="privacy-badge" wx:if="{{item.isPrivate}}">私密</view>
+      </view>
+      <view class="record-meta">{{item.dateRangeText}}｜{{item.category}}｜{{item.location}}</view>
+      <view class="tag-row" wx:if="{{item.tags && item.tags.length > 0}}">
+        <view wx:for="{{item.tags}}" wx:key="*this" class="tag">{{item}}</view>
+      </view>
+    </view>
+  </view>
+
+  <button class="export-btn" bindtap="exportWord">合并导出 Word</button>
+</view>
