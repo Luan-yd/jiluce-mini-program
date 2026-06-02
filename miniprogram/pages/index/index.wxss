@@ -118,13 +118,31 @@
   .record-body {
     padding: 24rpx;
   }
+
+  .record-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16rpx;
+  }
   
   .record-title {
+    flex: 1;
     font-size: 30rpx;
     font-weight: 700;
     color: #202124;
     line-height: 1.4;
     margin-bottom: 10rpx;
+  }
+
+  .privacy-badge {
+    flex-shrink: 0;
+    padding: 6rpx 14rpx;
+    border-radius: 999rpx;
+    background: #F8E6E0;
+    color: #A23B2A;
+    font-size: 21rpx;
+    font-weight: 700;
   }
   
   .record-meta {
