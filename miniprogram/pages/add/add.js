@@ -54,11 +54,16 @@ Page({
     normalizeTags(value) {
       return Array.isArray(value) ? value.filter(Boolean) : []
     },
+
+    getManagedCategories() {
+      const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
+      const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+      return categories.includes('其他') ? categories : [...categories, '其他']
+    },
   
     initManagedLists() {
-      const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
       const cachedProofTypes = wx.getStorageSync(PROOF_TYPE_STORAGE_KEY)
-      const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+      const categories = this.getManagedCategories()
       const proofTypes = Array.isArray(cachedProofTypes) && cachedProofTypes.length ? cachedProofTypes : DEFAULT_PROOF_TYPES
 
       this.setData({
@@ -141,8 +146,8 @@ Page({
       const value = e.currentTarget.dataset.value
       if (!value) return
 
-      if (DEFAULT_CATEGORIES.includes(value)) {
-        wx.showToast({ title: '默认分类不可删除', icon: 'none' })
+      if (value === '其他') {
+        wx.showToast({ title: '其他分类不可删除', icon: 'none' })
         return
       }
 
@@ -154,6 +159,7 @@ Page({
         success: res => {
           if (!res.confirm) return
           const categories = this.data.categories.filter(item => item !== value)
+          const nextCategories = categories.includes('其他') ? categories : [...categories, '其他']
           const nextCategory = this.data.form.category === value ? '其他' : this.data.form.category
           const rawRecords = wx.getStorageSync('records') || []
           const records = Array.isArray(rawRecords) ? rawRecords : []
@@ -164,9 +170,9 @@ Page({
             return { ...safeRecord, category: '其他', tags: this.normalizeTags(safeRecord.tags), updatedAt: new Date().toISOString() }
           })
 
-          wx.setStorageSync(CATEGORY_STORAGE_KEY, categories)
+          wx.setStorageSync(CATEGORY_STORAGE_KEY, nextCategories)
           wx.setStorageSync('records', updatedRecords)
-          this.setData({ categories, 'form.category': nextCategory })
+          this.setData({ categories: nextCategories, 'form.category': nextCategory })
           wx.showToast({ title: '分类已删除', icon: 'success' })
         }
       })
