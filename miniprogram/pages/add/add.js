@@ -27,7 +27,7 @@ Page({
         role: '',
         description: '',
         tags: [],
-        privacy: 'exportable'
+        privacy: 'normal'
       }
     },
   
@@ -39,6 +39,11 @@ Page({
       }
     },
 
+    normalizePrivacy(value) {
+      const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
+      return privateValues.includes(value) ? 'private' : 'normal'
+    },
+  
     initManagedLists() {
       const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
       const cachedProofTypes = wx.getStorageSync(PROOF_TYPE_STORAGE_KEY)
@@ -84,7 +89,7 @@ Page({
           role: record.role || '',
           description: record.description || '',
           tags: record.tags || [],
-          privacy: record.privacy || 'exportable'
+          privacy: this.normalizePrivacy(record.privacy)
         }
       })
     },
@@ -263,7 +268,7 @@ Page({
   
     onPrivacyChange(e) {
       this.setData({
-        'form.privacy': e.detail.value
+        'form.privacy': this.normalizePrivacy(e.detail.value)
       })
     },
   
@@ -336,8 +341,6 @@ Page({
           })
         }
       })
-    
-           
     },
   
     previewImage(e) {
@@ -349,7 +352,6 @@ Page({
         urls
       })
     },
-  
   
     deleteFile(e) {
       const index = e.currentTarget.dataset.index
@@ -413,6 +415,7 @@ Page({
       const oldRecords = wx.getStorageSync('records') || []
       const files = this.data.files || []
       const proofSummary = this.buildProofSummary(files)
+      const privacy = this.normalizePrivacy(form.privacy)
     
       if (this.data.isEdit) {
         const updatedRecords = oldRecords.map(item => {
@@ -427,7 +430,7 @@ Page({
               role: form.role || '未填写身份',
               description: form.description || '暂无备注',
               tags: form.tags,
-              privacy: form.privacy,
+              privacy,
               files,
               proofSummary,
               cover: files.length > 0 ? (files[0].tempPath || files[0].path) : '',
@@ -465,7 +468,7 @@ Page({
         role: form.role || '未填写身份',
         description: form.description || '暂无备注',
         tags: form.tags,
-        privacy: form.privacy,
+        privacy,
         files,
         proofSummary,
         cover: files.length > 0 ? (files[0].tempPath || files[0].path) : '',
@@ -489,5 +492,4 @@ Page({
         })
       }, 600)
     }
-  
   })
