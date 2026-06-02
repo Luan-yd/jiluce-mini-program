@@ -27,34 +27,27 @@ function formatDateRange(record) {
   return (record && record.date) || ''
 }
 
+function normalizePrivacy(value) {
+  const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
+  return privateValues.includes(value) ? 'private' : 'normal'
+}
+
+function getPrivacyText(record) {
+  return normalizePrivacy(record && record.privacy) === 'private' ? '私密记录' : '普通记录'
+}
+
 async function fetchImageBuffer(filePath) {
   try {
-    if (!filePath) {
-      console.log('图片路径为空')
-      return null
-    }
+    if (!filePath) return null
 
     const path = String(filePath)
 
-    console.log('准备读取图片：', path)
-
     if (!path.startsWith('cloud://')) {
-      console.log('不是云存储 fileID，云函数无法读取：', path)
       return null
     }
 
-    const result = await cloud.downloadFile({
-      fileID: path
-    })
-
-    if (!result || !result.fileContent) {
-      console.log('cloud.downloadFile 没有返回 fileContent：', path)
-      return null
-    }
-
-    console.log('图片读取成功，大小：', result.fileContent.length)
-
-    return result.fileContent
+    const result = await cloud.downloadFile({ fileID: path })
+    return result && result.fileContent ? result.fileContent : null
   } catch (err) {
     console.error('下载图片失败：', filePath, err)
     return null
@@ -78,23 +71,22 @@ function addTextParagraph(children, text, options = {}) {
   )
 }
 
-exports.main = async (event) => {
-  try {
-    const { record } = event
+function addHeading(children, text, level = HeadingLevel.HEADING_1) {
+  children.push(
+    new Paragraph({
+      text,
+      heading: level,
+      spacing: { before: 200, after: 200 }
+    })
+  )
+}
 
-    if (!record) {
-      return {
-        success: false,
-        error: '没有记录数据'
-      }
-    }
+async function addRecordContent(children, record, options = {}) {
+  const dateText = record.dateRangeText || formatDateRange(record) || '未填写'
 
-    console.log('generateWord 收到 record：', JSON.stringify(record))
-    console.log('generateWord 收到 files：', JSON.stringify(record.files || []))
-
-    const children = []
-    const dateText = record.dateRangeText || formatDateRange(record) || '未填写'
-
+  if (options.merge) {
+    addHeading(children, record.title || '未命名记录', HeadingLevel.HEADING_1)
+  } else {
     children.push(
       new Paragraph({
         text: '个人经历',
@@ -112,235 +104,157 @@ exports.main = async (event) => {
             size: 56
           })
         ]
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-        children: [
-          new TextRun({
-            text: `日期：${dateText}`,
-            size: 28
-          })
-        ]
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-        children: [
-          new TextRun({
-            text: `分类：${record.category || '未填写'}`,
-            size: 28
-          })
-        ]
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-        children: [
-          new TextRun({
-            text: `地点：${record.location || '未填写'}`,
-            size: 28
-          })
-        ]
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 600 },
-        children: [
-          new TextRun({
-            text: `身份：${record.role || '未填写'}`,
-            size: 28
-          })
-        ]
-      }),
-      new Paragraph({
-        children: [new PageBreak()]
       })
     )
+  }
 
-    children.push(
-      new Paragraph({
-        text: '经历说明',
-        heading: HeadingLevel.HEADING_1,
-        spacing: { after: 200 }
-      }),
-      new Paragraph({
-        spacing: { after: 400 },
-        children: [
-          new TextRun({
-            text: record.description || '暂无说明',
-            size: 24
-          })
-        ]
-      })
-    )
+  const infoRows = [
+    `日期：${dateText}`,
+    `分类：${record.category || '未填写'}`,
+    `地点：${record.location || '未填写'}`,
+    `身份：${record.role || '未填写'}`,
+    `隐私状态：${getPrivacyText(record)}`
+  ]
 
-    if (Array.isArray(record.tags) && record.tags.length > 0) {
+  infoRows.forEach(text => addTextParagraph(children, text, { size: options.merge ? 22 : 28, spacing: { after: 120 } }))
+
+  addHeading(children, '经历说明')
+  addTextParagraph(children, record.description || '暂无说明', { spacing: { after: 400 } })
+
+  if (Array.isArray(record.tags) && record.tags.length > 0) {
+    addHeading(children, '标签')
+    addTextParagraph(children, record.tags.join('  ·  '), { spacing: { after: 400 } })
+  }
+
+  if (Array.isArray(record.proofSummary) && record.proofSummary.length > 0) {
+    addHeading(children, '材料概览')
+    addTextParagraph(children, record.proofSummary.map(item => `${item.name}${item.count}份`).join('，'), { spacing: { after: 400 } })
+  }
+
+  addHeading(children, '材料图片')
+
+  const files = Array.isArray(record.files) ? record.files : []
+
+  if (!files.length) {
+    addTextParagraph(children, '暂无图片材料', { size: 22, color: '888888', spacing: { after: 300 } })
+    return
+  }
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i] || {}
+    const fileType = file.type || file.name || `材料${i + 1}`
+    const filePath = file.path || file.fileID || file.url || ''
+
+    addTextParagraph(children, fileType, { bold: true, size: 22, spacing: { after: 100 } })
+
+    const buf = await fetchImageBuffer(filePath)
+
+    if (buf) {
       children.push(
         new Paragraph({
-          text: '标签',
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 200 }
-        }),
-        new Paragraph({
-          spacing: { after: 400 },
+          spacing: { after: 300 },
           children: [
-            new TextRun({
-              text: record.tags.join('  ·  '),
-              size: 24
+            new ImageRun({
+              data: buf,
+              type: 'png',
+              transformation: {
+                width: 400,
+                height: 300
+              }
             })
           ]
         })
       )
-    }
-
-    if (Array.isArray(record.proofSummary) && record.proofSummary.length > 0) {
-      children.push(
-        new Paragraph({
-          text: '材料概览',
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 200 }
-        }),
-        new Paragraph({
-          spacing: { after: 400 },
-          children: [
-            new TextRun({
-              text: record.proofSummary
-                .map(item => `${item.name}${item.count}份`)
-                .join('，'),
-              size: 24
-            })
-          ]
-        })
-      )
-    }
-
-    if (Array.isArray(record.files) && record.files.length > 0) {
-      children.push(
-        new Paragraph({
-          children: [new PageBreak()]
-        }),
-        new Paragraph({
-          text: '材料图片',
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 300 }
-        })
-      )
-
-      for (let i = 0; i < record.files.length; i++) {
-        const file = record.files[i] || {}
-        const fileType = file.type || file.name || `材料${i + 1}`
-        const filePath = file.path || file.fileID || file.url || ''
-
-        console.log(`第 ${i + 1} 张图片：`, {
-          fileType,
-          filePath
-        })
-
-        children.push(
-          new Paragraph({
-            spacing: { after: 100 },
-            children: [
-              new TextRun({
-                text: fileType,
-                bold: true,
-                size: 22
-              })
-            ]
-          })
-        )
-
-        const buf = await fetchImageBuffer(filePath)
-
-        if (buf) {
-          children.push(
-            new Paragraph({
-              spacing: { after: 300 },
-              children: [
-                new ImageRun({
-                  data: buf,
-                  type: 'png',
-                  transformation: {
-                    width: 400,
-                    height: 300
-                  }
-                })
-              ]
-            })
-          )
-        } else {
-          children.push(
-            new Paragraph({
-              spacing: { after: 300 },
-              children: [
-                new TextRun({
-                  text: '图片读取失败：该图片可能不是云存储路径，或云函数没有权限读取。请重新上传图片后再导出。',
-                  size: 20,
-                  color: '888888'
-                })
-              ]
-            })
-          )
-        }
-      }
     } else {
-      children.push(
-        new Paragraph({
-          text: '材料图片',
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 200 }
-        }),
-        new Paragraph({
-          spacing: { after: 400 },
-          children: [
-            new TextRun({
-              text: '暂无图片材料',
-              size: 22,
-              color: '888888'
-            })
-          ]
+      addTextParagraph(children, '图片读取失败', { size: 20, color: '888888', spacing: { after: 300 } })
+    }
+  }
+}
+
+async function buildSingleDocument(record) {
+  const children = []
+  await addRecordContent(children, record, { merge: false })
+
+  children.push(
+    new Paragraph({ children: [new PageBreak()] }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+      children: [
+        new TextRun({
+          text: '本资料包由迹录册根据用户上传材料自动整理生成，让每一段经历，都有迹可循。',
+          size: 22,
+          color: '888888'
         })
-      )
+      ]
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: `生成时间：${new Date().toLocaleDateString('zh-CN')}`,
+          size: 22,
+          color: '888888'
+        })
+      ]
+    })
+  )
+
+  return { children, fileName: safeFileName(record.title) }
+}
+
+async function buildMergedDocument(records, exportMeta = {}) {
+  const children = []
+
+  children.push(
+    new Paragraph({
+      text: exportMeta.title || '筛选合并导出',
+      heading: HeadingLevel.TITLE,
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 300 }
+    })
+  )
+
+  addTextParagraph(children, `导出条件：${exportMeta.condition || '未填写'}`, { alignment: AlignmentType.CENTER, size: 24 })
+  addTextParagraph(children, `导出时间：${exportMeta.exportedAt || new Date().toLocaleString('zh-CN')}`, { alignment: AlignmentType.CENTER, size: 24, spacing: { after: 500 } })
+
+  for (let i = 0; i < records.length; i++) {
+    if (i > 0) {
+      children.push(new Paragraph({ children: [new PageBreak()] }))
     }
 
-    children.push(
-      new Paragraph({
-        children: [new PageBreak()]
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-        children: [
-          new TextRun({
-            text: '本资料包由迹录册根据用户上传材料自动整理生成，让每一段经历，都有迹可循。',
-            size: 22,
-            color: '888888'
-          })
-        ]
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [
-          new TextRun({
-            text: `生成时间：${new Date().toLocaleDateString('zh-CN')}`,
-            size: 22,
-            color: '888888'
-          })
-        ]
-      })
-    )
+    await addRecordContent(children, records[i], { merge: true })
+  }
+
+  return { children, fileName: '筛选合并导出' }
+}
+
+exports.main = async (event) => {
+  try {
+    const records = Array.isArray(event.records) ? event.records : null
+    const record = event.record
+
+    if ((!records || !records.length) && !record) {
+      return {
+        success: false,
+        error: '没有记录数据'
+      }
+    }
+
+    const docData = records && records.length
+      ? await buildMergedDocument(records, event.exportMeta || {})
+      : await buildSingleDocument(record)
 
     const doc = new Document({
       sections: [
         {
-          children
+          children: docData.children
         }
       ]
     })
 
     const buffer = await Packer.toBuffer(doc)
-
-    const cloudPath = `word/${Date.now()}_${safeFileName(record.title)}.docx`
+    const cloudPath = `word/${Date.now()}_${safeFileName(docData.fileName)}.docx`
 
     const uploadResult = await cloud.uploadFile({
       cloudPath,
