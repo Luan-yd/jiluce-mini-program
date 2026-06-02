@@ -2,25 +2,30 @@ const { exportRecordsToWord } = require('../../utils/export-word')
 
 const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
 const CATEGORY_STORAGE_KEY = 'customCategories'
+const TIME_FILTERS = [
+  { key: 'all', label: '全部' },
+  { key: 'today', label: '今天' },
+  { key: 'week', label: '本周' },
+  { key: 'month', label: '本月' },
+  { key: 'year', label: '本年' },
+  { key: 'custom', label: '自定义' }
+]
 
 Page({
   data: {
-    mode: 'date',
-    modes: [
-      { key: 'date', label: '按日期' },
-      { key: 'tag', label: '按标签' },
-      { key: 'category', label: '按分类' }
-    ],
-    dateType: 'day',
-    exportDate: '',
-    startDate: '',
-    endDate: '',
+    categories: ['全部', ...DEFAULT_CATEGORIES],
     tags: [],
-    categories: DEFAULT_CATEGORIES,
-    selectedTag: '',
-    selectedCategory: '',
+    tagOptions: ['全部标签'],
+    timeFilters: TIME_FILTERS,
+    selectedCategory: '全部',
+    selectedTag: '全部标签',
+    selectedTime: 'all',
+    customStartDate: '',
+    customEndDate: '',
+    keyword: '',
     records: [],
-    conditionText: '请选择筛选条件',
+    resultCount: 0,
+    conditionText: '分类：全部；标签：全部标签；时间：全部',
     isGenerating: false
   },
 
@@ -33,146 +38,194 @@ Page({
     return privateValues.includes(value) ? 'private' : 'normal'
   },
 
-  refreshPageData() {
-    const rawRecords = wx.getStorageSync('records') || []
-    const sourceRecords = Array.isArray(rawRecords) ? rawRecords : []
-    const tagMap = {}
+  normalizeCategory(value) {
+    return value || '其他'
+  },
 
-    sourceRecords.forEach(record => {
-      ;((record && record.tags) || []).forEach(tag => {
-        if (tag) tagMap[tag] = true
-      })
+  normalizeTags(value) {
+    return Array.isArray(value) ? value.filter(Boolean) : []
+  },
+
+  refreshPageData() {
+    const allRecords = this.getAllRecords()
+    const tagMap = {}
+    allRecords.forEach(record => {
+      record.tags.forEach(tag => { tagMap[tag] = true })
     })
 
     const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-    const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+    const managedCategories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+    const categories = ['全部', ...managedCategories]
     const tags = Object.keys(tagMap)
-    const nextState = {
-      mode: this.data.mode || 'date',
-      dateType: this.data.dateType || 'day',
-      exportDate: this.data.exportDate || '',
-      startDate: this.data.startDate || '',
-      endDate: this.data.endDate || '',
-      tags,
-      categories,
-      selectedTag: tags.includes(this.data.selectedTag) ? this.data.selectedTag : tags[0] || '',
-      selectedCategory: categories.includes(this.data.selectedCategory) ? this.data.selectedCategory : categories[0] || ''
-    }
-    const filterResult = this.getFilteredRecords(sourceRecords, nextState)
+    const tagOptions = tags.length ? ['全部标签', ...tags] : ['暂无标签']
+    const selectedCategory = categories.includes(this.data.selectedCategory) ? this.data.selectedCategory : '全部'
+    const selectedTag = tagOptions.includes(this.data.selectedTag) ? this.data.selectedTag : tagOptions[0]
+    const filterResult = this.filterRecords(allRecords, {
+      selectedCategory,
+      selectedTag,
+      selectedTime: this.data.selectedTime,
+      customStartDate: this.data.customStartDate,
+      customEndDate: this.data.customEndDate,
+      keyword: this.data.keyword
+    })
 
     this.setData({
-      ...nextState,
+      categories,
+      tags,
+      tagOptions,
+      selectedCategory,
+      selectedTag,
       records: filterResult.records,
+      resultCount: filterResult.records.length,
       conditionText: filterResult.conditionText
     })
   },
 
-  changeMode(e) {
-    this.updateFilter({ mode: e.currentTarget.dataset.mode || 'date' })
+  getAllRecords() {
+    const rawRecords = wx.getStorageSync('records') || []
+    return (Array.isArray(rawRecords) ? rawRecords : []).map(item => {
+      const safeItem = item || {}
+      const privacy = this.normalizePrivacy(safeItem.privacy)
+      const category = this.normalizeCategory(safeItem.category)
+      return {
+        ...safeItem,
+        category,
+        privacy,
+        isPrivate: privacy === 'private',
+        tags: this.normalizeTags(safeItem.tags),
+        proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
+        files: Array.isArray(safeItem.files) ? safeItem.files : [],
+        dateRangeText: this.formatDateRange(safeItem)
+      }
+    })
   },
 
-  changeDateType(e) {
-    this.updateFilter({ dateType: e.currentTarget.dataset.type || 'day' })
-  },
-
-  onExportDateChange(e) {
-    this.updateFilter({ exportDate: e.detail.value || '' })
-  },
-
-  onStartDateChange(e) {
-    const start = e.detail.value || ''
-    if (this.data.endDate && start > this.data.endDate) {
-      wx.showToast({ title: '开始日期不能晚于结束日期', icon: 'none' })
-      return
+  updateFilter(patch) {
+    const state = {
+      selectedCategory: this.data.selectedCategory,
+      selectedTag: this.data.selectedTag,
+      selectedTime: this.data.selectedTime,
+      customStartDate: this.data.customStartDate,
+      customEndDate: this.data.customEndDate,
+      keyword: this.data.keyword,
+      ...patch
     }
-    this.updateFilter({ startDate: start })
-  },
-
-  onEndDateChange(e) {
-    const end = e.detail.value || ''
-    if (this.data.startDate && end < this.data.startDate) {
-      wx.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
-      return
-    }
-    this.updateFilter({ endDate: end })
-  },
-
-  onTagChange(e) {
-    const index = Number(e.detail.value)
-    this.updateFilter({ selectedTag: this.data.tags[index] || '' })
+    const filterResult = this.filterRecords(this.getAllRecords(), state)
+    this.setData({
+      ...patch,
+      records: filterResult.records,
+      resultCount: filterResult.records.length,
+      conditionText: filterResult.conditionText
+    })
   },
 
   onCategoryChange(e) {
     const index = Number(e.detail.value)
-    this.updateFilter({ selectedCategory: this.data.categories[index] || '' })
+    this.updateFilter({ selectedCategory: this.data.categories[index] || '全部' })
   },
 
-  updateFilter(patch) {
-    const nextState = {
-      mode: this.data.mode,
-      dateType: this.data.dateType,
-      exportDate: this.data.exportDate,
-      startDate: this.data.startDate,
-      endDate: this.data.endDate,
-      tags: Array.isArray(this.data.tags) ? this.data.tags : [],
-      categories: Array.isArray(this.data.categories) ? this.data.categories : DEFAULT_CATEGORIES,
-      selectedTag: this.data.selectedTag,
-      selectedCategory: this.data.selectedCategory,
-      ...patch
-    }
-    const rawRecords = wx.getStorageSync('records') || []
-    const sourceRecords = Array.isArray(rawRecords) ? rawRecords : []
-    const filterResult = this.getFilteredRecords(sourceRecords, nextState)
-
-    this.setData({
-      ...patch,
-      records: filterResult.records,
-      conditionText: filterResult.conditionText
-    })
+  onTagChange(e) {
+    const index = Number(e.detail.value)
+    const selectedTag = this.data.tagOptions[index] || this.data.tagOptions[0] || '暂无标签'
+    this.updateFilter({ selectedTag })
   },
 
-  getFilteredRecords(sourceRecords, state) {
-    const allRecords = (Array.isArray(sourceRecords) ? sourceRecords : []).map(item => {
-      const safeItem = item || {}
-      const privacy = this.normalizePrivacy(safeItem.privacy)
-      return {
-        ...safeItem,
-        privacy,
-        isPrivate: privacy === 'private',
-        dateRangeText: this.formatDateRange(safeItem),
-        tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
-        proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
-        files: Array.isArray(safeItem.files) ? safeItem.files : []
-      }
-    })
+  changeTimeFilter(e) {
+    const selectedTime = e.currentTarget.dataset.key || 'all'
+    this.updateFilter({ selectedTime })
+  },
 
-    let list = []
-    let conditionText = ''
+  onCustomStartChange(e) {
+    const start = e.detail.value || ''
+    if (this.data.customEndDate && start > this.data.customEndDate) {
+      wx.showToast({ title: '开始日期不能晚于结束日期', icon: 'none' })
+      return
+    }
+    this.updateFilter({ customStartDate: start, selectedTime: 'custom' })
+  },
 
-    if (state.mode === 'date') {
-      if (state.dateType === 'day') {
-        conditionText = state.exportDate ? `日期：${state.exportDate}` : '请选择某一天'
-        list = state.exportDate ? allRecords.filter(item => this.isRecordInRange(item, state.exportDate, state.exportDate)) : []
-      } else {
-        conditionText = state.startDate || state.endDate ? `日期范围：${state.startDate || '不限'} 至 ${state.endDate || '不限'}` : '请选择时间范围'
-        list = state.startDate || state.endDate ? allRecords.filter(item => this.isRecordInRange(item, state.startDate, state.endDate)) : []
-      }
+  onCustomEndChange(e) {
+    const end = e.detail.value || ''
+    if (this.data.customStartDate && end < this.data.customStartDate) {
+      wx.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
+      return
+    }
+    this.updateFilter({ customEndDate: end, selectedTime: 'custom' })
+  },
+
+  onKeywordInput(e) {
+    this.updateFilter({ keyword: (e.detail.value || '').trim() })
+  },
+
+  filterRecords(sourceRecords, state) {
+    const selectedCategory = state.selectedCategory || '全部'
+    const selectedTag = state.selectedTag || '全部标签'
+    const selectedTime = state.selectedTime || 'all'
+    const keyword = (state.keyword || '').trim().toLowerCase()
+    const range = this.getTimeRange(selectedTime, state.customStartDate, state.customEndDate)
+
+    let list = Array.isArray(sourceRecords) ? sourceRecords : []
+
+    if (selectedCategory !== '全部') {
+      list = list.filter(record => record.category === selectedCategory)
     }
 
-    if (state.mode === 'tag') {
-      conditionText = state.selectedTag ? `标签：${state.selectedTag}` : '暂无可选标签'
-      list = state.selectedTag ? allRecords.filter(item => item.tags.includes(state.selectedTag)) : []
+    if (selectedTag !== '全部标签' && selectedTag !== '暂无标签') {
+      list = list.filter(record => record.tags.includes(selectedTag))
     }
 
-    if (state.mode === 'category') {
-      conditionText = state.selectedCategory ? `分类：${state.selectedCategory}` : '暂无可选分类'
-      list = state.selectedCategory ? allRecords.filter(item => item.category === state.selectedCategory) : []
+    if (range) {
+      list = list.filter(record => this.isRecordInRange(record, range.start, range.end))
     }
 
+    if (keyword) {
+      list = list.filter(record => {
+        const fileText = (record.files || []).map(file => [file.name || '', file.type || '', file.desc || '', file.description || ''].join(' ')).join(' ')
+        const text = [
+          record.title || '',
+          record.location || '',
+          record.role || '',
+          record.description || '',
+          record.category || '',
+          record.dateRangeText || '',
+          ...(record.tags || []),
+          ...(record.proofSummary || []).map(item => item.name || ''),
+          fileText
+        ].join(' ').toLowerCase()
+        return text.includes(keyword)
+      })
+    }
+
+    const conditionText = this.buildConditionText(state)
     return {
       records: list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)),
       conditionText
     }
+  },
+
+  getTimeRange(key, customStartDate, customEndDate) {
+    const today = new Date()
+    const todayText = this.formatDate(today)
+    if (key === 'today') return { start: todayText, end: todayText }
+
+    if (key === 'week') {
+      const day = today.getDay() || 7
+      const startDate = new Date(today)
+      startDate.setDate(today.getDate() - day + 1)
+      const endDate = new Date(startDate)
+      endDate.setDate(startDate.getDate() + 6)
+      return { start: this.formatDate(startDate), end: this.formatDate(endDate) }
+    }
+
+    if (key === 'month') {
+      const startDate = new Date(today.getFullYear(), today.getMonth(), 1)
+      const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+      return { start: this.formatDate(startDate), end: this.formatDate(endDate) }
+    }
+
+    if (key === 'year') return { start: `${today.getFullYear()}-01-01`, end: `${today.getFullYear()}-12-31` }
+    if (key === 'custom') return customStartDate || customEndDate ? { start: customStartDate, end: customEndDate } : null
+    return null
   },
 
   isRecordInRange(record, start, end) {
@@ -182,6 +235,30 @@ Page({
     if (start && recordEnd < start) return false
     if (end && recordStart > end) return false
     return true
+  },
+
+  buildConditionText(state) {
+    const timeLabel = this.getTimeText(state.selectedTime, state.customStartDate, state.customEndDate)
+    const parts = [
+      `分类：${state.selectedCategory || '全部'}`,
+      `标签：${state.selectedTag || '全部标签'}`,
+      `时间：${timeLabel}`
+    ]
+    if (state.keyword) parts.push(`关键词：${state.keyword}`)
+    return parts.join('；')
+  },
+
+  getTimeText(key, customStartDate, customEndDate) {
+    if (key === 'custom') return `${customStartDate || '不限'} 至 ${customEndDate || '不限'}`
+    const current = TIME_FILTERS.find(item => item.key === key)
+    return current ? current.label : '全部'
+  },
+
+  formatDate(date) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
   },
 
   formatDateRange(record) {
@@ -203,9 +280,9 @@ Page({
       {
         title: '筛选合并导出',
         condition: this.data.conditionText,
-        type: 'legacy-filter-page'
+        type: 'combined-filter'
       },
-      { emptyText: '暂无可导出的记录' }
+      { emptyText: '当前筛选下暂无可导出的记录' }
     )
     this.setData({ isGenerating: false })
   }
