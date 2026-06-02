@@ -23,10 +23,6 @@ Page({
     emptyDesc: '先添加一条经历证明，它会自动出现在这里。'
   },
 
-  onLoad() {
-    this.loadTimeline()
-  },
-
   onShow() {
     this.loadTimeline()
   },
