@@ -12,7 +12,7 @@
 <view class="filter-panel">
   <view class="filter-top-row">
     <view class="filter-title">时间筛选</view>
-    <view class="merge-export-btn" bindtap="goMergeExport">筛选合并导出</view>
+    <view class="merge-export-btn {{isGenerating ? 'disabled' : ''}}" bindtap="goMergeExport">合并导出 Word</view>
   </view>
 
   <view class="filter-row">
