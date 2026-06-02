@@ -1,4 +1,5 @@
 const { exportRecordsToWord } = require('../../utils/export-word')
+const { getUserCategories, normalizeCategory, normalizeTags } = require('../../utils/categories')
 
 const FILTERS = [
   { key: 'all', label: '全部' },
@@ -35,11 +36,8 @@ Page({
     return privateValues.includes(value) ? 'private' : 'normal'
   },
 
-  normalizeCategory(value) {
-    return value || '其他'
-  },
-
   loadTimeline() {
+    const categories = getUserCategories()
     const rawRecords = wx.getStorageSync('records') || []
     const records = Array.isArray(rawRecords) ? rawRecords : []
     const decoratedRecords = records.map(item => {
@@ -47,10 +45,10 @@ Page({
       const privacy = this.normalizePrivacy(safeItem.privacy)
       return {
         ...safeItem,
-        category: this.normalizeCategory(safeItem.category),
+        category: normalizeCategory(safeItem.category, categories),
         privacy,
         isPrivate: privacy === 'private',
-        tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
+        tags: normalizeTags(safeItem.tags),
         proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
         files: Array.isArray(safeItem.files) ? safeItem.files : [],
         dateRangeText: this.formatDateRange(safeItem)
