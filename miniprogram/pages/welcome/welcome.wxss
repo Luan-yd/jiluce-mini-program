@@ -12,6 +12,7 @@
   }
   
   .logo-box {
+    position: relative;
     width: 128rpx;
     height: 128rpx;
     border-radius: 32rpx;
@@ -20,7 +21,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     box-shadow: 0 16rpx 36rpx rgba(41, 76, 96, 0.22);
+  }
+
+  .logo-img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 128rpx;
+    height: 128rpx;
+    display: block;
+    z-index: 2;
   }
   
   .logo-text {
