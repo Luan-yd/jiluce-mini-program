@@ -164,6 +164,20 @@
     padding: 6rpx 16rpx;
     font-size: 22rpx;
   }
+
+  .load-more {
+    width: 240rpx;
+    height: 72rpx;
+    line-height: 72rpx;
+    text-align: center;
+    margin: 18rpx auto 150rpx;
+    border-radius: 999rpx;
+    background: #FFFFFF;
+    color: #294C60;
+    border: 1rpx solid #E5E1DA;
+    font-size: 25rpx;
+    font-weight: 700;
+  }
   
   .bottom-actions {
     position: fixed;
