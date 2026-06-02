@@ -46,24 +46,32 @@ Page({
       const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
       return privateValues.includes(value) ? 'private' : 'normal'
     },
+
+    normalizeCategory(value) {
+      return value || '其他'
+    },
+
+    normalizeTags(value) {
+      return Array.isArray(value) ? value.filter(Boolean) : []
+    },
   
     initManagedLists() {
       const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
       const cachedProofTypes = wx.getStorageSync(PROOF_TYPE_STORAGE_KEY)
-      const categories = Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
-      const proofTypes = Array.isArray(cachedProofTypes) ? cachedProofTypes : DEFAULT_PROOF_TYPES
+      const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+      const proofTypes = Array.isArray(cachedProofTypes) && cachedProofTypes.length ? cachedProofTypes : DEFAULT_PROOF_TYPES
 
       this.setData({
         categories,
         proofTypes,
-        'form.category': categories[0] || '',
+        'form.category': categories[0] || '其他',
         currentProofType: proofTypes[0] || ''
       })
     },
   
     loadEditRecord(id) {
       const records = wx.getStorageSync('records') || []
-      const record = records.find(item => item.id === id)
+      const record = (Array.isArray(records) ? records : []).find(item => item.id === id)
   
       if (!record) {
         wx.showToast({ title: '记录不存在', icon: 'none' })
@@ -75,16 +83,16 @@ Page({
         isEdit: true,
         editId: id,
         files: record.files || [],
-        tagInput: (record.tags || []).join('，'),
+        tagInput: this.normalizeTags(record.tags).join('，'),
         form: {
           title: record.title || '',
           date: record.date || '',
           endDate: record.endDate || '',
           location: record.location || '',
-          category: record.category || '',
+          category: this.normalizeCategory(record.category),
           role: record.role || '',
           description: record.description || '',
-          tags: record.tags || [],
+          tags: this.normalizeTags(record.tags),
           privacy: this.normalizePrivacy(record.privacy)
         }
       })
@@ -131,17 +139,35 @@ Page({
 
     deleteCategory(e) {
       const value = e.currentTarget.dataset.value
+      if (!value) return
+
+      if (DEFAULT_CATEGORIES.includes(value)) {
+        wx.showToast({ title: '默认分类不可删除', icon: 'none' })
+        return
+      }
+
       wx.showModal({
         title: '删除分类',
-        content: `确定要删除“${value}”吗？已保存记录中的分类文字不会受影响。`,
+        content: '删除该分类后，原属于此分类的记录将自动归入“其他”，是否继续？',
         confirmText: '删除',
         confirmColor: '#B24A3B',
         success: res => {
           if (!res.confirm) return
           const categories = this.data.categories.filter(item => item !== value)
-          const nextCategory = this.data.form.category === value ? (categories[0] || '') : this.data.form.category
+          const nextCategory = this.data.form.category === value ? '其他' : this.data.form.category
+          const rawRecords = wx.getStorageSync('records') || []
+          const records = Array.isArray(rawRecords) ? rawRecords : []
+          const updatedRecords = records.map(record => {
+            const safeRecord = record || {}
+            const category = this.normalizeCategory(safeRecord.category)
+            if (category !== value) return { ...safeRecord, category, tags: this.normalizeTags(safeRecord.tags) }
+            return { ...safeRecord, category: '其他', tags: this.normalizeTags(safeRecord.tags), updatedAt: new Date().toISOString() }
+          })
+
           wx.setStorageSync(CATEGORY_STORAGE_KEY, categories)
+          wx.setStorageSync('records', updatedRecords)
           this.setData({ categories, 'form.category': nextCategory })
+          wx.showToast({ title: '分类已删除', icon: 'success' })
         }
       })
     },
@@ -337,19 +363,16 @@ Page({
         wx.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
         return
       }
-
-      if (!form.category) {
-        wx.showToast({ title: '请先添加分类', icon: 'none' })
-        return
-      }
     
       const oldRecords = wx.getStorageSync('records') || []
       const files = this.data.files || []
       const proofSummary = this.buildProofSummary(files)
       const privacy = this.normalizePrivacy(form.privacy)
+      const category = this.normalizeCategory(form.category)
+      const tags = this.normalizeTags(form.tags)
     
       if (this.data.isEdit) {
-        const updatedRecords = oldRecords.map(item => {
+        const updatedRecords = (Array.isArray(oldRecords) ? oldRecords : []).map(item => {
           if (item.id === this.data.editId) {
             return {
               ...item,
@@ -357,10 +380,10 @@ Page({
               date: form.date,
               endDate: form.endDate || '',
               location: form.location || '未填写地点',
-              category: form.category,
+              category,
               role: form.role || '未填写身份',
               description: form.description || '暂无备注',
-              tags: form.tags,
+              tags,
               privacy,
               files,
               proofSummary,
@@ -386,10 +409,10 @@ Page({
         date: form.date,
         endDate: form.endDate || '',
         location: form.location || '未填写地点',
-        category: form.category,
+        category,
         role: form.role || '未填写身份',
         description: form.description || '暂无备注',
-        tags: form.tags,
+        tags,
         privacy,
         files,
         proofSummary,
@@ -399,8 +422,9 @@ Page({
         updatedAt: new Date().toISOString()
       }
     
-      oldRecords.unshift(newRecord)
-      wx.setStorageSync('records', oldRecords)
+      const records = Array.isArray(oldRecords) ? oldRecords : []
+      records.unshift(newRecord)
+      wx.setStorageSync('records', records)
       wx.showToast({ title: '保存成功', icon: 'success' })
       setTimeout(() => { wx.switchTab({ url: '/pages/index/index' }) }, 600)
     }
