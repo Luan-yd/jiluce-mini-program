@@ -28,50 +28,57 @@
   width: 88rpx;
 }
 
-.mode-row,
-.date-type-row {
-  display: flex;
-  gap: 14rpx;
-  margin-bottom: 22rpx;
-}
-
-.mode-item,
-.date-type {
-  flex: 1;
-  height: 72rpx;
-  line-height: 72rpx;
-  text-align: center;
-  border-radius: 20rpx;
-  background: #FFFFFF;
-  border: 1rpx solid #E5E1DA;
-  color: #555555;
-  font-size: 25rpx;
-  font-weight: 700;
-}
-
-.mode-item.active,
-.date-type.active {
-  background: #294C60;
-  border-color: #294C60;
-  color: #FFFFFF;
-}
-
 .filter-card {
   background: #FFFFFF;
   border: 1rpx solid #E5E1DA;
   border-radius: 24rpx;
   padding: 24rpx;
-  margin-bottom: 28rpx;
+  margin-bottom: 22rpx;
   box-sizing: border-box;
+}
+
+.filter-label {
+  font-size: 25rpx;
+  font-weight: 800;
+  color: #202124;
+  margin-bottom: 14rpx;
+}
+
+.time-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.time-filter {
+  padding: 10rpx 20rpx;
+  border-radius: 999rpx;
+  background: #F8F6F1;
+  color: #555555;
+  font-size: 23rpx;
+  border: 1rpx solid #E5E1DA;
+}
+
+.time-filter.active {
+  background: #294C60;
+  border-color: #294C60;
+  color: #FFFFFF;
+  font-weight: 700;
 }
 
 .range-row {
   display: flex;
   align-items: center;
   gap: 12rpx;
+  margin-top: 18rpx;
 }
 
-.picker-value {
+.range-row picker {
+  flex: 1;
+}
+
+.picker-value,
+.keyword-input {
   min-height: 72rpx;
   line-height: 72rpx;
   padding: 0 22rpx;
@@ -83,8 +90,8 @@
   box-sizing: border-box;
 }
 
-.range-row picker {
-  flex: 1;
+.keyword-input {
+  width: 100%;
 }
 
 .placeholder {
@@ -100,6 +107,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 20rpx;
   margin: 30rpx 0 18rpx;
 }
 
@@ -112,10 +120,12 @@
 .condition-text {
   font-size: 23rpx;
   color: #77746E;
+  line-height: 1.5;
   margin-top: 8rpx;
 }
 
 .result-count {
+  flex-shrink: 0;
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
   background: #DDECE7;
@@ -177,6 +187,12 @@
   background: #E9DED0;
   color: #7A4F2A;
   font-size: 21rpx;
+}
+
+.no-tag {
+  margin-top: 16rpx;
+  color: #999999;
+  font-size: 23rpx;
 }
 
 .empty {
