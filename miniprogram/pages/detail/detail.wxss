@@ -64,13 +64,31 @@
     box-shadow: 0 12rpx 36rpx rgba(41, 76, 96, 0.08);
     box-sizing: border-box;
   }
+
+  .detail-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18rpx;
+  }
   
   .detail-title {
+    flex: 1;
     font-size: 38rpx;
     font-weight: 800;
     color: #202124;
     line-height: 1.4;
     margin-bottom: 12rpx;
+  }
+
+  .privacy-badge {
+    flex-shrink: 0;
+    padding: 7rpx 16rpx;
+    border-radius: 999rpx;
+    background: #F8E6E0;
+    color: #A23B2A;
+    font-size: 22rpx;
+    font-weight: 700;
   }
   
   .detail-meta {
