@@ -5,17 +5,12 @@ Page({
     },
   
     onLoad(options) {
-      this.setData({
-        id: options.id
-      })
-  
+      this.setData({ id: options.id })
       this.loadRecord(options.id)
     },
   
     onShow() {
-      if (this.data.id) {
-        this.loadRecord(this.data.id)
-      }
+      if (this.data.id) this.loadRecord(this.data.id)
     },
 
     normalizePrivacy(value) {
@@ -28,17 +23,10 @@ Page({
       const record = records.find(item => item.id === id)
   
       if (!record) {
-        wx.showToast({
-          title: '记录不存在',
-          icon: 'none'
-        })
-  
+        wx.showToast({ title: '记录不存在', icon: 'none' })
         setTimeout(() => {
-          wx.redirectTo({
-            url: '/pages/index/index'
-          })
+          wx.redirectTo({ url: '/pages/index/index' })
         }, 800)
-  
         return
       }
 
@@ -63,47 +51,60 @@ Page({
     },
   
     goBack() {
-      wx.redirectTo({
-        url: '/pages/index/index'
-      })
+      wx.redirectTo({ url: '/pages/index/index' })
     },
   
     editRecord() {
-      wx.navigateTo({
-        url: `/pages/add/add?id=${this.data.record.id}`
-      })
+      wx.navigateTo({ url: `/pages/add/add?id=${this.data.record.id}` })
     },
 
     goList() {
-      wx.switchTab({
-        url: '/pages/index/index'
+      wx.switchTab({ url: '/pages/index/index' })
+    },
+
+    isCloudFilePath(path) {
+      return typeof path === 'string' && path.indexOf('cloud://') === 0
+    },
+
+    deleteCloudFiles(files) {
+      const fileList = (files || [])
+        .map(item => item && (item.path || item.fileID || item.url))
+        .filter(path => this.isCloudFilePath(path))
+
+      if (!fileList.length) return
+
+      wx.cloud.deleteFile({
+        fileList,
+        success: res => {
+          console.log('记录关联图片已清理：', res.fileList)
+        },
+        fail: err => {
+          console.error('记录关联图片清理失败：', err)
+        }
       })
     },
   
     deleteRecord() {
       wx.showModal({
         title: '删除记录',
-        content: '确定要删除这条记录吗？删除后不可恢复。',
+        content: '确定要删除这条记录吗？删除后会同步清理它关联的云端图片。',
         confirmText: '删除',
         confirmColor: '#B24A3B',
         success: res => {
           if (!res.confirm) return
     
           const id = this.data.id
+          const record = this.data.record || {}
           const records = wx.getStorageSync('records') || []
           const newRecords = records.filter(item => item.id !== id)
     
           wx.setStorageSync('records', newRecords)
+          this.deleteCloudFiles(record.files || [])
     
-          wx.showToast({
-            title: '已删除',
-            icon: 'success'
-          })
+          wx.showToast({ title: '已删除', icon: 'success' })
     
           setTimeout(() => {
-            wx.switchTab({
-              url: '/pages/index/index'
-            })
+            wx.switchTab({ url: '/pages/index/index' })
           }, 600)
         }
       })
@@ -112,21 +113,13 @@ Page({
     previewHeroImage(e) {
       const index = e.currentTarget.dataset.index
       const urls = (this.data.record.files || []).map(item => item.tempPath || item.path)
-  
-      wx.previewImage({
-        current: urls[index],
-        urls
-      })
+      wx.previewImage({ current: urls[index], urls })
     },
   
     previewImage(e) {
       const index = e.currentTarget.dataset.index
       const urls = (this.data.record.files || []).map(item => item.path)
-  
-      wx.previewImage({
-        current: urls[index],
-        urls
-      })
+      wx.previewImage({ current: urls[index], urls })
     },
 
     confirmPrivateExport(callback) {
@@ -143,18 +136,14 @@ Page({
         confirmText: '继续导出',
         cancelText: '取消',
         success: res => {
-          if (res.confirm) {
-            callback()
-          }
+          if (res.confirm) callback()
         }
       })
     },
   
     generateProof() {
       this.confirmPrivateExport(() => {
-        wx.navigateTo({
-          url: `/pages/proof/proof?id=${this.data.record.id}`
-        })
+        wx.navigateTo({ url: `/pages/proof/proof?id=${this.data.record.id}` })
       })
     }
   })
