@@ -1,5 +1,5 @@
-const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
-const CATEGORY_STORAGE_KEY = 'customCategories'
+const { getUserCategories, normalizeCategory, normalizeTags } = require('../../utils/categories')
+
 const DEFAULT_CATEGORY_ICONS = {
   '项目': '📁',
   '实习': '💼',
@@ -43,22 +43,13 @@ Page({
     this.loadHomeData()
   },
 
-  normalizeCategory(value) {
-    return value || '其他'
-  },
-
-  getCategories() {
-    const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-    const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
-    return categories.includes('其他') ? categories : [...categories, '其他']
-  },
-
   loadHomeData() {
+    const categories = getUserCategories()
     const rawRecords = wx.getStorageSync('records') || []
     const records = (Array.isArray(rawRecords) ? rawRecords : []).map(item => ({
       ...(item || {}),
-      category: this.normalizeCategory(item && item.category),
-      tags: Array.isArray(item && item.tags) ? item.tags : []
+      category: normalizeCategory(item && item.category, categories),
+      tags: normalizeTags(item && item.tags)
     }))
 
     const recordCount = records.length
@@ -70,8 +61,6 @@ Page({
     const latestUpdate = records.length > 0
       ? this.formatDate(records[0].updatedAt || records[0].createdAt || records[0].date)
       : '暂无记录'
-
-    const categories = this.getCategories()
 
     const categoryStats = categories.map((name, index) => ({
       name,
