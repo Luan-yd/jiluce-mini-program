@@ -79,6 +79,8 @@
   </view>
 </view>
 
+<view class="load-more" wx:if="{{hasMore}}" bindtap="loadMoreRecords">加载更多</view>
+
 <view class="empty" wx:if="{{records.length === 0}}">
   <view class="empty-title">还没有记录</view>
   <view class="empty-desc">
