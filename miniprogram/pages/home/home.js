@@ -49,8 +49,8 @@ Page({
 
   getCategories() {
     const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-    const customCategories = Array.isArray(cachedCategories) ? cachedCategories : []
-    return [...new Set([...DEFAULT_CATEGORIES, ...customCategories])]
+    const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+    return categories.includes('其他') ? categories : [...categories, '其他']
   },
 
   loadHomeData() {
