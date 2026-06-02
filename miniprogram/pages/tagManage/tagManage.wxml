@@ -1,0 +1,24 @@
+<view class="tag-page">
+  <view class="top-nav">
+    <view class="back" bindtap="goBack">‹ 返回</view>
+    <view class="nav-title">标签管理</view>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <view class="summary-card">
+    <view class="summary-title">已有标签</view>
+    <view class="summary-desc">标签来自所有记录，删除标签不会删除记录。</view>
+  </view>
+
+  <view class="empty" wx:if="{{tags.length === 0}}">暂无标签</view>
+
+  <view wx:else class="tag-list">
+    <view wx:for="{{tags}}" wx:key="name" class="tag-item">
+      <view>
+        <view class="tag-name">{{item.name}}</view>
+        <view class="tag-count">{{item.count}} 条记录使用</view>
+      </view>
+      <view class="delete-btn" bindtap="deleteTag" data-value="{{item.name}}">删除</view>
+    </view>
+  </view>
+</view>
