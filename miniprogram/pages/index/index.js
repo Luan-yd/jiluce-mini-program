@@ -49,8 +49,9 @@ Page({
 
     getCategoryFilters() {
       const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-      const categories = Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
-      return ['全部', ...categories]
+      const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
+      const managedCategories = categories.includes('其他') ? categories : [...categories, '其他']
+      return ['全部', ...managedCategories]
     },
   
     loadRecords() {
