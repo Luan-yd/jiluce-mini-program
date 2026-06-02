@@ -35,6 +35,10 @@ Page({
     return privateValues.includes(value) ? 'private' : 'normal'
   },
 
+  normalizeCategory(value) {
+    return value || '其他'
+  },
+
   loadTimeline() {
     const rawRecords = wx.getStorageSync('records') || []
     const records = Array.isArray(rawRecords) ? rawRecords : []
@@ -43,6 +47,7 @@ Page({
       const privacy = this.normalizePrivacy(safeItem.privacy)
       return {
         ...safeItem,
+        category: this.normalizeCategory(safeItem.category),
         privacy,
         isPrivate: privacy === 'private',
         tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
