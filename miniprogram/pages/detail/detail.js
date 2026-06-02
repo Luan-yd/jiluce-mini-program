@@ -17,6 +17,11 @@ Page({
         this.loadRecord(this.data.id)
       }
     },
+
+    normalizePrivacy(value) {
+      const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
+      return privateValues.includes(value) ? 'private' : 'normal'
+    },
   
     loadRecord(id) {
       const records = wx.getStorageSync('records') || []
@@ -36,10 +41,14 @@ Page({
   
         return
       }
+
+      const privacy = this.normalizePrivacy(record.privacy)
   
       this.setData({
         record: {
           ...record,
+          privacy,
+          isPrivate: privacy === 'private',
           dateRangeText: this.formatDateRange(record)
         }
       })
