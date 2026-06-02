@@ -1,3 +1,5 @@
+const { exportRecordsToWord } = require('../../utils/export-word')
+
 const FILTERS = [
   { key: 'all', label: '全部' },
   { key: 'today', label: '今天' },
@@ -20,7 +22,8 @@ Page({
     hasMore: false,
     hasAnyRecords: false,
     emptyText: '还没有时间轴记录',
-    emptyDesc: '先添加一条经历证明，它会自动出现在这里。'
+    emptyDesc: '先添加一条经历证明，它会自动出现在这里。',
+    isGenerating: false
   },
 
   onShow() {
@@ -36,8 +39,17 @@ Page({
     const rawRecords = wx.getStorageSync('records') || []
     const records = Array.isArray(rawRecords) ? rawRecords : []
     const decoratedRecords = records.map(item => {
-      const privacy = this.normalizePrivacy(item && item.privacy)
-      return { ...(item || {}), privacy, isPrivate: privacy === 'private' }
+      const safeItem = item || {}
+      const privacy = this.normalizePrivacy(safeItem.privacy)
+      return {
+        ...safeItem,
+        privacy,
+        isPrivate: privacy === 'private',
+        tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
+        proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
+        files: Array.isArray(safeItem.files) ? safeItem.files : [],
+        dateRangeText: this.formatDateRange(safeItem)
+      }
     })
     this.applyFilter(decoratedRecords)
   },
@@ -155,10 +167,16 @@ Page({
   },
 
   formatDate(date) {
+    if (!(date instanceof Date)) return ''
     const y = date.getFullYear()
     const m = String(date.getMonth() + 1).padStart(2, '0')
     const d = String(date.getDate()).padStart(2, '0')
     return `${y}-${m}-${d}`
+  },
+
+  formatDateRange(record) {
+    if (record && record.endDate && record.endDate !== record.date) return `${record.date} 至 ${record.endDate}`
+    return (record && record.date) || ''
   },
 
   getMonthKey(dateString) {
@@ -168,8 +186,34 @@ Page({
     return `${parts[0]}年${Number(parts[1])}月`
   },
 
+  getCurrentRangeText() {
+    const current = this.data.filters.find(item => item.key === this.data.currentFilter)
+    if (this.data.currentFilter === 'all') return '导出范围：全部记录'
+    if (this.data.currentFilter === 'custom') {
+      const start = this.data.customStartDate || '不限'
+      const end = this.data.customEndDate || '不限'
+      return `导出范围：${start} 至 ${end}`
+    }
+    return `导出范围：${current ? current.label : '当前筛选'}`
+  },
+
+  async exportCurrentTimeline() {
+    if (this.data.isGenerating) return
+    this.setData({ isGenerating: true })
+    await exportRecordsToWord(
+      this.data.filteredRecords,
+      {
+        title: '时间轴记录导出',
+        condition: this.getCurrentRangeText(),
+        type: 'timeline'
+      },
+      { emptyText: '当前筛选下暂无可导出的记录' }
+    )
+    this.setData({ isGenerating: false })
+  },
+
   goMergeExport() {
-    wx.navigateTo({ url: '/pages/export/export' })
+    this.exportCurrentTimeline()
   },
 
   goDetail(e) {
