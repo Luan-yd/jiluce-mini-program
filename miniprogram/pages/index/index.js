@@ -1,14 +1,13 @@
 const { exportRecordsToWord } = require('../../utils/export-word')
+const { getUserCategories, normalizeCategory, normalizeTags } = require('../../utils/categories')
 
-const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
-const CATEGORY_STORAGE_KEY = 'customCategories'
 const PAGE_SIZE = 10
 
 Page({
     data: {
       keyword: '',
       currentFilter: '全部',
-      filters: ['全部', ...DEFAULT_CATEGORIES],
+      filters: ['全部', ...getUserCategories()],
   
       allRecords: [],
       filteredRecords: [],
@@ -27,20 +26,16 @@ Page({
       return privateValues.includes(value) ? 'private' : 'normal'
     },
 
-    normalizeCategory(value) {
-      return value || '其他'
-    },
-
     decorateRecord(item) {
       const safeItem = item || {}
       const privacy = this.normalizePrivacy(safeItem.privacy)
       return {
         ...safeItem,
-        category: this.normalizeCategory(safeItem.category),
+        category: normalizeCategory(safeItem.category, getUserCategories()),
         privacy,
         isPrivate: privacy === 'private',
         privacyText: privacy === 'private' ? '私密' : '',
-        tags: Array.isArray(safeItem.tags) ? safeItem.tags : [],
+        tags: normalizeTags(safeItem.tags),
         proofSummary: Array.isArray(safeItem.proofSummary) ? safeItem.proofSummary : [],
         files: Array.isArray(safeItem.files) ? safeItem.files : [],
         dateRangeText: this.formatDateRange(safeItem)
@@ -48,10 +43,7 @@ Page({
     },
 
     getCategoryFilters() {
-      const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-      const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
-      const managedCategories = categories.includes('其他') ? categories : [...categories, '其他']
-      return ['全部', ...managedCategories]
+      return ['全部', ...getUserCategories()]
     },
   
     loadRecords() {
