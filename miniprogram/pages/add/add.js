@@ -1,6 +1,14 @@
-const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
+const {
+  DEFAULT_CATEGORIES,
+  getUserCategories,
+  saveUserCategories,
+  normalizeCategory,
+  normalizeTags,
+  migrateCategoryToOther,
+  OTHER_CATEGORY
+} = require('../../utils/categories')
+
 const DEFAULT_PROOF_TYPES = ['现场照片', '工牌证件', '合影', '聊天记录', '合同', '付款记录', '证书', '邮件']
-const CATEGORY_STORAGE_KEY = 'customCategories'
 const PROOF_TYPE_STORAGE_KEY = 'customProofTypes'
 const TARGET_IMAGE_SIZE = 1024 * 1024
 const IDEAL_IMAGE_SIZE = 500 * 1024
@@ -42,39 +50,36 @@ Page({
       }
     },
 
+    onShow() {
+      this.refreshCategories()
+    },
+
     normalizePrivacy(value) {
       const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
       return privateValues.includes(value) ? 'private' : 'normal'
     },
-
-    normalizeCategory(value) {
-      return value || '其他'
-    },
-
-    normalizeTags(value) {
-      return Array.isArray(value) ? value.filter(Boolean) : []
-    },
-
-    getManagedCategories() {
-      const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
-      const categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : DEFAULT_CATEGORIES
-      return categories.includes('其他') ? categories : [...categories, '其他']
-    },
   
     initManagedLists() {
       const cachedProofTypes = wx.getStorageSync(PROOF_TYPE_STORAGE_KEY)
-      const categories = this.getManagedCategories()
+      const categories = getUserCategories()
       const proofTypes = Array.isArray(cachedProofTypes) && cachedProofTypes.length ? cachedProofTypes : DEFAULT_PROOF_TYPES
 
       this.setData({
         categories,
         proofTypes,
-        'form.category': categories[0] || '其他',
+        'form.category': categories.includes(this.data.form.category) ? this.data.form.category : (categories[0] || OTHER_CATEGORY),
         currentProofType: proofTypes[0] || ''
       })
     },
+
+    refreshCategories() {
+      const categories = getUserCategories()
+      const currentCategory = normalizeCategory(this.data.form.category, categories)
+      this.setData({ categories, 'form.category': currentCategory })
+    },
   
     loadEditRecord(id) {
+      const categories = getUserCategories()
       const records = wx.getStorageSync('records') || []
       const record = (Array.isArray(records) ? records : []).find(item => item.id === id)
   
@@ -88,16 +93,16 @@ Page({
         isEdit: true,
         editId: id,
         files: record.files || [],
-        tagInput: this.normalizeTags(record.tags).join('，'),
+        tagInput: normalizeTags(record.tags).join('，'),
         form: {
           title: record.title || '',
           date: record.date || '',
           endDate: record.endDate || '',
           location: record.location || '',
-          category: this.normalizeCategory(record.category),
+          category: normalizeCategory(record.category, categories),
           role: record.role || '',
           description: record.description || '',
-          tags: this.normalizeTags(record.tags),
+          tags: normalizeTags(record.tags),
           privacy: this.normalizePrivacy(record.privacy)
         }
       })
@@ -136,8 +141,8 @@ Page({
             return
           }
           const categories = [...this.data.categories, value]
-          wx.setStorageSync(CATEGORY_STORAGE_KEY, categories)
-          this.setData({ categories, 'form.category': this.data.form.category || value })
+          saveUserCategories(categories)
+          this.setData({ categories: getUserCategories(), 'form.category': value })
         }
       })
     },
@@ -146,7 +151,7 @@ Page({
       const value = e.currentTarget.dataset.value
       if (!value) return
 
-      if (value === '其他') {
+      if (value === OTHER_CATEGORY) {
         wx.showToast({ title: '其他分类不可删除', icon: 'none' })
         return
       }
@@ -158,21 +163,10 @@ Page({
         confirmColor: '#B24A3B',
         success: res => {
           if (!res.confirm) return
-          const categories = this.data.categories.filter(item => item !== value)
-          const nextCategories = categories.includes('其他') ? categories : [...categories, '其他']
-          const nextCategory = this.data.form.category === value ? '其他' : this.data.form.category
-          const rawRecords = wx.getStorageSync('records') || []
-          const records = Array.isArray(rawRecords) ? rawRecords : []
-          const updatedRecords = records.map(record => {
-            const safeRecord = record || {}
-            const category = this.normalizeCategory(safeRecord.category)
-            if (category !== value) return { ...safeRecord, category, tags: this.normalizeTags(safeRecord.tags) }
-            return { ...safeRecord, category: '其他', tags: this.normalizeTags(safeRecord.tags), updatedAt: new Date().toISOString() }
-          })
-
-          wx.setStorageSync(CATEGORY_STORAGE_KEY, nextCategories)
-          wx.setStorageSync('records', updatedRecords)
-          this.setData({ categories: nextCategories, 'form.category': nextCategory })
+          migrateCategoryToOther(value)
+          const categories = getUserCategories()
+          const nextCategory = this.data.form.category === value ? OTHER_CATEGORY : normalizeCategory(this.data.form.category, categories)
+          this.setData({ categories, 'form.category': nextCategory })
           wx.showToast({ title: '分类已删除', icon: 'success' })
         }
       })
@@ -272,10 +266,7 @@ Page({
       }
 
       if (currentSize > TARGET_IMAGE_SIZE) {
-        wx.showToast({
-          title: '图片较大，已尽量压缩',
-          icon: 'none'
-        })
+        wx.showToast({ title: '图片较大，已尽量压缩', icon: 'none' })
       }
 
       if (currentSize > 0 && currentSize < IDEAL_IMAGE_SIZE) {
@@ -374,8 +365,8 @@ Page({
       const files = this.data.files || []
       const proofSummary = this.buildProofSummary(files)
       const privacy = this.normalizePrivacy(form.privacy)
-      const category = this.normalizeCategory(form.category)
-      const tags = this.normalizeTags(form.tags)
+      const category = normalizeCategory(form.category, getUserCategories())
+      const tags = normalizeTags(form.tags)
     
       if (this.data.isEdit) {
         const updatedRecords = (Array.isArray(oldRecords) ? oldRecords : []).map(item => {
