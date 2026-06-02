@@ -20,6 +20,11 @@
   />
 </view>
 
+<view class="search-export-row" wx:if="{{keyword}}">
+  <view class="search-export-text">当前搜索结果 {{filteredRecords.length}} 条</view>
+  <view class="search-export-btn {{isGenerating ? 'disabled' : ''}}" bindtap="exportSearchResults">导出当前搜索结果</view>
+</view>
+
 <view class="filter-row">
   <view
     wx:for="{{filters}}"
