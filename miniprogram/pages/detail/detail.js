@@ -1,3 +1,9 @@
+const {
+  getUserCategories,
+  normalizeCategory,
+  normalizeTags
+} = require('../../utils/categories')
+
 Page({
     data: {
       id: '',
@@ -17,14 +23,6 @@ Page({
       const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
       return privateValues.includes(value) ? 'private' : 'normal'
     },
-
-    normalizeCategory(value) {
-      return value || '其他'
-    },
-
-    normalizeTags(value) {
-      return Array.isArray(value) ? value.filter(Boolean) : []
-    },
   
     loadRecord(id) {
       const rawRecords = wx.getStorageSync('records') || []
@@ -40,12 +38,13 @@ Page({
       }
 
       const privacy = this.normalizePrivacy(record.privacy)
+      const categories = getUserCategories()
   
       this.setData({
         record: {
           ...record,
-          category: this.normalizeCategory(record.category),
-          tags: this.normalizeTags(record.tags),
+          category: normalizeCategory(record.category, categories),
+          tags: normalizeTags(record.tags),
           proofSummary: Array.isArray(record.proofSummary) ? record.proofSummary : [],
           files: Array.isArray(record.files) ? record.files : [],
           privacy,
