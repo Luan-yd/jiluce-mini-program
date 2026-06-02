@@ -5,7 +5,10 @@
     <view class="page-title">迹录册</view>
     <view class="page-subtitle">经历归档</view>
   </view>
-  <view class="more" bindtap="openMoreMenu">•••</view>
+  <view class="header-actions">
+    <view class="merge-export-entry" bindtap="goMergeExport">合并导出</view>
+    <view class="more" bindtap="openMoreMenu">•••</view>
+  </view>
 </view>
 
 <view class="search-box">
