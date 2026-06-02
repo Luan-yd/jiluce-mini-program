@@ -77,5 +77,5 @@
     </view>
   </view>
 
-  <button class="export-btn" bindtap="exportWord">合并导出 Word</button>
+  <button class="export-btn" bindtap="exportWord" loading="{{isGenerating}}" disabled="{{isGenerating}}">{{isGenerating ? '生成中…' : '合并导出 Word'}}</button>
 </view>
