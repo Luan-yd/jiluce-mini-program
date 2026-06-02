@@ -9,9 +9,34 @@
   <view class="home-btn" bindtap="goIndex">首页</view>
 </view>
 
+<view class="filter-panel">
+  <view class="filter-row">
+    <view
+      wx:for="{{filters}}"
+      wx:key="key"
+      class="filter {{currentFilter === item.key ? 'active' : ''}}"
+      bindtap="changeFilter"
+      data-key="{{item.key}}"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <view class="custom-row" wx:if="{{currentFilter === 'custom'}}">
+    <picker mode="date" value="{{customStartDate}}" bindchange="onCustomStartChange">
+      <view class="date-picker {{customStartDate ? '' : 'placeholder'}}">{{customStartDate || '开始日期'}}</view>
+    </picker>
+    <view class="date-separator">至</view>
+    <picker mode="date" value="{{customEndDate}}" bindchange="onCustomEndChange">
+      <view class="date-picker {{customEndDate ? '' : 'placeholder'}}">{{customEndDate || '结束日期'}}</view>
+    </picker>
+  </view>
+</view>
+
 <view class="empty" wx:if="{{groups.length === 0}}">
-  <view class="empty-title">还没有时间轴记录</view>
-  <view class="empty-desc">先添加一条经历证明，它会自动出现在这里。</view>
+  <view class="empty-title">{{emptyText}}</view>
+  <view class="empty-desc" wx:if="{{emptyText === '还没有时间轴记录'}}">先添加一条经历证明，它会自动出现在这里。</view>
+  <view class="empty-desc" wx:else>可以切换筛选条件或调整自定义日期范围。</view>
   <button class="empty-btn" bindtap="goAdd">新建记录</button>
 </view>
 
@@ -36,7 +61,10 @@
         <view class="timeline-card">
           <view class="card-main">
             <view>
-              <view class="record-title">{{item.title}}</view>
+              <view class="record-title-row">
+                <view class="record-title">{{item.title}}</view>
+                <view class="privacy-badge" wx:if="{{item.isPrivate}}">私密</view>
+              </view>
               <view class="record-meta">{{item.date}}｜{{item.category}}｜{{item.location}}</view>
             </view>
 
