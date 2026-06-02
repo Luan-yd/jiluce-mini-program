@@ -1,5 +1,6 @@
 const DEFAULT_CATEGORIES = ['项目', '实习', '旅游', '记忆', '其他']
 const CATEGORY_STORAGE_KEY = 'customCategories'
+const PAGE_SIZE = 10
 
 Page({
     data: {
@@ -8,7 +9,10 @@ Page({
       filters: ['全部', ...DEFAULT_CATEGORIES],
   
       allRecords: [],
-      records: []
+      filteredRecords: [],
+      records: [],
+      pageIndex: 1,
+      hasMore: false
     },
   
     onShow() {
@@ -42,11 +46,7 @@ Page({
       const currentFilter = filters.includes(this.data.currentFilter) ? this.data.currentFilter : '全部'
       const records = (wx.getStorageSync('records') || []).map(item => this.decorateRecord(item))
   
-      this.setData({
-        filters,
-        currentFilter,
-        allRecords: records
-      }, () => {
+      this.setData({ filters, currentFilter, allRecords: records }, () => {
         this.filterRecords()
       })
     },
@@ -61,21 +61,13 @@ Page({
   
     onSearchInput(e) {
       const keyword = e.detail.value.trim()
-  
-      this.setData({
-        keyword
-      })
-  
+      this.setData({ keyword, pageIndex: 1 })
       this.filterRecords()
     },
   
     changeFilter(e) {
       const name = e.currentTarget.dataset.name
-  
-      this.setData({
-        currentFilter: name
-      })
-  
+      this.setData({ currentFilter: name, pageIndex: 1 })
       this.filterRecords()
     },
   
@@ -103,90 +95,66 @@ Page({
             item.description || '',
             ...(item.tags || []),
             ...(item.proofSummary || []).map(p => p.name || '')
-          ]
-            .join(' ')
-            .toLowerCase()
+          ].join(' ').toLowerCase()
   
           return text.includes(searchText)
         })
       }
-  
+
+      this.setData({ filteredRecords: list, pageIndex: 1 }, () => {
+        this.updateVisibleRecords()
+      })
+    },
+
+    updateVisibleRecords() {
+      const end = this.data.pageIndex * PAGE_SIZE
+      const records = this.data.filteredRecords.slice(0, end)
       this.setData({
-        records: list
+        records,
+        hasMore: end < this.data.filteredRecords.length
+      })
+    },
+
+    loadMoreRecords() {
+      this.setData({ pageIndex: this.data.pageIndex + 1 }, () => {
+        this.updateVisibleRecords()
       })
     },
   
     goTimeline() {
-      wx.navigateTo({
-        url: '/pages/timeline/timeline'
-      })
+      wx.navigateTo({ url: '/pages/timeline/timeline' })
     },
 
     goMergeExport() {
-      wx.navigateTo({
-        url: '/pages/export/export'
-      })
+      wx.navigateTo({ url: '/pages/export/export' })
     },
 
     openMoreMenu() {
-        wx.showActionSheet({
-          itemList: [
-            '筛选合并导出',
-            '生成长图资料包',
-            '图片转文字 OCR',
-            '标签管理',
-            '关于迹录册'
-          ],
-          success: res => {
-            const index = res.tapIndex
-      
-            if (index === 0) {
-              this.goMergeExport()
-            }
-
-            if (index === 1) {
-              wx.showToast({
-                title: '请进入某条记录详情页生成资料包',
-                icon: 'none'
-              })
-            }
-      
-            if (index === 2) {
-              wx.showToast({
-                title: 'OCR功能下一步开发',
-                icon: 'none'
-              })
-            }
-      
-            if (index === 3) {
-              wx.showToast({
-                title: '标签管理功能开发中',
-                icon: 'none'
-              })
-            }
-      
-            if (index === 4) {
-              wx.showModal({
-                title: '关于迹录册',
-                content: '迹录册是一个帮助你记录、整理和导出经历资料的工具。',
-                showCancel: false
-              })
-            }
+      wx.showActionSheet({
+        itemList: ['筛选合并导出', '生成长图资料包', '图片转文字 OCR', '标签管理', '关于迹录册'],
+        success: res => {
+          const index = res.tapIndex
+          if (index === 0) this.goMergeExport()
+          if (index === 1) wx.showToast({ title: '请进入某条记录详情页生成资料包', icon: 'none' })
+          if (index === 2) wx.showToast({ title: 'OCR功能下一步开发', icon: 'none' })
+          if (index === 3) wx.showToast({ title: '标签管理功能开发中', icon: 'none' })
+          if (index === 4) {
+            wx.showModal({
+              title: '关于迹录册',
+              content: '迹录册是一个帮助你记录、整理和导出经历资料的工具。',
+              showCancel: false
+            })
           }
-        })
-      },
+        }
+      })
+    },
   
-      goAdd() {
-        wx.navigateTo({
-          url: '/pages/add/add'
-        })
-      },
+    goAdd() {
+      wx.navigateTo({ url: '/pages/add/add' })
+    },
   
     goDetail(e) {
       const id = e.currentTarget.dataset.id
-  
-      wx.navigateTo({
-        url: `/pages/detail/detail?id=${id}`
-      })
+      wx.navigateTo({ url: `/pages/detail/detail?id=${id}` })
     }
   })
