@@ -17,9 +17,18 @@ Page({
       const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
       return privateValues.includes(value) ? 'private' : 'normal'
     },
+
+    normalizeCategory(value) {
+      return value || '其他'
+    },
+
+    normalizeTags(value) {
+      return Array.isArray(value) ? value.filter(Boolean) : []
+    },
   
     loadRecord(id) {
-      const records = wx.getStorageSync('records') || []
+      const rawRecords = wx.getStorageSync('records') || []
+      const records = Array.isArray(rawRecords) ? rawRecords : []
       const record = records.find(item => item.id === id)
   
       if (!record) {
@@ -35,6 +44,10 @@ Page({
       this.setData({
         record: {
           ...record,
+          category: this.normalizeCategory(record.category),
+          tags: this.normalizeTags(record.tags),
+          proofSummary: Array.isArray(record.proofSummary) ? record.proofSummary : [],
+          files: Array.isArray(record.files) ? record.files : [],
           privacy,
           isPrivate: privacy === 'private',
           dateRangeText: this.formatDateRange(record)
