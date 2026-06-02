@@ -10,6 +10,11 @@
 </view>
 
 <view class="filter-panel">
+  <view class="filter-top-row">
+    <view class="filter-title">时间筛选</view>
+    <view class="merge-export-btn" bindtap="goMergeExport">筛选合并导出</view>
+  </view>
+
   <view class="filter-row">
     <view
       wx:for="{{filters}}"
@@ -35,8 +40,7 @@
 
 <view class="empty" wx:if="{{groups.length === 0}}">
   <view class="empty-title">{{emptyText}}</view>
-  <view class="empty-desc" wx:if="{{emptyText === '还没有时间轴记录'}}">先添加一条经历证明，它会自动出现在这里。</view>
-  <view class="empty-desc" wx:else>可以切换筛选条件或调整自定义日期范围。</view>
+  <view class="empty-desc">{{emptyDesc}}</view>
   <button class="empty-btn" bindtap="goAdd">新建记录</button>
 </view>
 
