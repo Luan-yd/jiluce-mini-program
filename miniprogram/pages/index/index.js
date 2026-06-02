@@ -15,6 +15,22 @@ Page({
       this.loadRecords()
     },
 
+    normalizePrivacy(value) {
+      const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
+      return privateValues.includes(value) ? 'private' : 'normal'
+    },
+
+    decorateRecord(item) {
+      const privacy = this.normalizePrivacy(item.privacy)
+      return {
+        ...item,
+        privacy,
+        isPrivate: privacy === 'private',
+        privacyText: privacy === 'private' ? '私密' : '',
+        dateRangeText: this.formatDateRange(item)
+      }
+    },
+
     getCategoryFilters() {
       const cachedCategories = wx.getStorageSync(CATEGORY_STORAGE_KEY)
       const categories = Array.isArray(cachedCategories) ? cachedCategories : DEFAULT_CATEGORIES
@@ -24,10 +40,7 @@ Page({
     loadRecords() {
       const filters = this.getCategoryFilters()
       const currentFilter = filters.includes(this.data.currentFilter) ? this.data.currentFilter : '全部'
-      const records = (wx.getStorageSync('records') || []).map(item => ({
-        ...item,
-        dateRangeText: this.formatDateRange(item)
-      }))
+      const records = (wx.getStorageSync('records') || []).map(item => this.decorateRecord(item))
   
       this.setData({
         filters,
@@ -109,9 +122,16 @@ Page({
       })
     },
 
+    goMergeExport() {
+      wx.navigateTo({
+        url: '/pages/export/export'
+      })
+    },
+
     openMoreMenu() {
         wx.showActionSheet({
           itemList: [
+            '筛选合并导出',
             '生成长图资料包',
             '图片转文字 OCR',
             '标签管理',
@@ -121,27 +141,31 @@ Page({
             const index = res.tapIndex
       
             if (index === 0) {
+              this.goMergeExport()
+            }
+
+            if (index === 1) {
               wx.showToast({
                 title: '请进入某条记录详情页生成资料包',
                 icon: 'none'
               })
             }
       
-            if (index === 1) {
+            if (index === 2) {
               wx.showToast({
                 title: 'OCR功能下一步开发',
                 icon: 'none'
               })
             }
       
-            if (index === 2) {
+            if (index === 3) {
               wx.showToast({
                 title: '标签管理功能开发中',
                 icon: 'none'
               })
             }
       
-            if (index === 3) {
+            if (index === 4) {
               wx.showModal({
                 title: '关于迹录册',
                 content: '迹录册是一个帮助你记录、整理和导出经历资料的工具。',
@@ -153,13 +177,6 @@ Page({
       },
   
       goAdd() {
-        console.log('点击了新增经历按钮')
-      
-        wx.showToast({
-          title: '点到了',
-          icon: 'none'
-        })
-      
         wx.navigateTo({
           url: '/pages/add/add'
         })
