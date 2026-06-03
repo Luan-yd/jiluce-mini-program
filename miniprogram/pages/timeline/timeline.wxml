@@ -97,8 +97,9 @@
             </view>
           </view>
 
-          <view class="cover-row" wx:if="{{item.cover}}">
-            <image class="cover-img" src="{{item.cover}}" mode="aspectFill"></image>
+          <view class="cover-row">
+            <image wx:if="{{item.coverDisplay}}" class="cover-img" src="{{item.coverDisplay}}" mode="aspectFill"></image>
+            <view wx:else class="cover-placeholder">暂无图片</view>
           </view>
         </view>
       </view>
