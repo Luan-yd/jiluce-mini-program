@@ -21,8 +21,9 @@
     >
       <image
         class="hero-img"
-        src="{{item.tempPath || item.path}}"
+        src="{{item.path}}"
         mode="aspectFill"
+        binderror="onImageError"
       />
     </swiper-item>
   </swiper>
@@ -84,7 +85,7 @@
   <view class="section-title">材料</view>
   <view class="material-tip">如需新增、删除或修改材料，请点击“编辑记录”。</view>
 
-  <view class="material-grid">
+  <view class="material-grid" wx:if="{{record.files && record.files.length > 0}}">
     <view
       wx:for="{{record.files}}"
       wx:key="id"
@@ -92,10 +93,11 @@
       bindtap="previewImage"
       data-index="{{index}}"
     >
-      <image class="material-img" src="{{item.path}}" mode="aspectFill" />
+      <image class="material-img" src="{{item.path}}" mode="aspectFill" binderror="onImageError" />
       <view class="material-type">{{item.type}}</view>
     </view>
   </view>
+  <view wx:else class="material-tip">暂无可显示图片</view>
 
   <button class="export-btn" bindtap="generateProof">
     生成资料包
