@@ -1,5 +1,6 @@
 const { exportRecordsToWord } = require('../../utils/export-word')
 const { getUserCategories, normalizeCategory, normalizeTags } = require('../../utils/categories')
+const { resolveRecordCovers } = require('../../utils/record-cover')
 
 const FILTERS = [
   { key: 'all', label: '全部' },
@@ -36,11 +37,11 @@ Page({
     return privateValues.includes(value) ? 'private' : 'normal'
   },
 
-  loadTimeline() {
+  async loadTimeline() {
     const categories = getUserCategories()
     const rawRecords = wx.getStorageSync('records') || []
     const records = Array.isArray(rawRecords) ? rawRecords : []
-    const decoratedRecords = records.map(item => {
+    const decoratedRecords = await resolveRecordCovers(records.map(item => {
       const safeItem = item || {}
       const privacy = this.normalizePrivacy(safeItem.privacy)
       return {
@@ -53,7 +54,7 @@ Page({
         files: Array.isArray(safeItem.files) ? safeItem.files : [],
         dateRangeText: this.formatDateRange(safeItem)
       }
-    })
+    }))
     this.applyFilter(decoratedRecords)
   },
 
