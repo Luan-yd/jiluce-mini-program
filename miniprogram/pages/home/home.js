@@ -1,4 +1,5 @@
 const { getUserCategories, normalizeCategory, normalizeTags } = require('../../utils/categories')
+const { resolveRecordCovers } = require('../../utils/record-cover')
 
 const DEFAULT_CATEGORY_ICONS = {
   '项目': '📁',
@@ -43,14 +44,14 @@ Page({
     this.loadHomeData()
   },
 
-  loadHomeData() {
+  async loadHomeData() {
     const categories = getUserCategories()
     const rawRecords = wx.getStorageSync('records') || []
-    const records = (Array.isArray(rawRecords) ? rawRecords : []).map(item => ({
+    const records = await resolveRecordCovers((Array.isArray(rawRecords) ? rawRecords : []).map(item => ({
       ...(item || {}),
       category: normalizeCategory(item && item.category, categories),
       tags: normalizeTags(item && item.tags)
-    }))
+    })))
 
     const recordCount = records.length
 
@@ -72,7 +73,7 @@ Page({
       ...item,
       displayDate: this.formatDateRange(item),
       materialText: `${(item.files && item.files.length) || 0}份材料`,
-      coverDisplay: item.cover || ''
+      coverDisplay: item.coverDisplay || ''
     }))
 
     this.setData({
