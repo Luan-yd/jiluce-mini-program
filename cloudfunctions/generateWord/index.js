@@ -14,9 +14,12 @@ const {
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const BRAND_NAME = '迹录册'
-const BODY_COLOR = '202124'
-const MUTED_COLOR = '666666'
-const HEADING_COLOR = '294C60'
+const BRAND_SLOGAN = '让每段经历，都有迹可循'
+const BODY_COLOR = '2A2A28'
+const MUTED_COLOR = '7B756C'
+const HEADING_COLOR = '28566B'
+const ACCENT_COLOR = 'C6A25C'
+const SOFT_LINE_COLOR = 'E8E1D4'
 const ERROR_COLOR = '888888'
 const EMPTY_TEXT_VALUES = [
   '',
@@ -211,6 +214,8 @@ function addParagraph(children, runs, options = {}) {
       alignment: options.alignment,
       spacing: options.spacing || { after: 160 },
       border: options.border,
+      shading: options.shading,
+      indent: options.indent,
       children: Array.isArray(runs) ? runs : [runs]
     })
   )
@@ -232,18 +237,36 @@ function addTextParagraph(children, text, options = {}) {
   )
 }
 
-function addMainTitle(children, text, options = {}) {
+function addBrandHeader(children) {
+  addParagraph(
+    children,
+    [
+      new TextRun({ text: '迹', bold: true, size: 22, color: 'FFFFFF' }),
+      new TextRun({ text: `  ${BRAND_NAME}`, bold: true, size: 24, color: HEADING_COLOR }),
+      new TextRun({ text: `  ·  ${BRAND_SLOGAN}`, size: 18, color: MUTED_COLOR })
+    ],
+    {
+      spacing: { before: 0, after: 120 },
+      shading: { fill: 'F8F5EE' },
+      border: {
+        bottom: { color: SOFT_LINE_COLOR, space: 4, style: BorderStyle.SINGLE, size: 4 }
+      }
+    }
+  )
+}
+
+function addMainTitle(children, text) {
   addParagraph(
     children,
     new TextRun({
       text: normalizeText(text) || '未命名记录',
       bold: true,
-      size: options.merge ? 34 : 40,
+      size: 38,
       color: BODY_COLOR
     }),
     {
-      alignment: options.merge ? AlignmentType.LEFT : AlignmentType.CENTER,
-      spacing: { before: options.merge ? 120 : 0, after: 260 }
+      alignment: AlignmentType.LEFT,
+      spacing: { before: 180, after: 160 }
     }
   )
 }
@@ -252,20 +275,21 @@ function addSectionHeading(children, text) {
   children.push(
     new Paragraph({
       heading: HeadingLevel.HEADING_2,
-      spacing: { before: 320, after: 160 },
+      spacing: { before: 300, after: 140 },
       border: {
         bottom: {
-          color: 'D9E4E1',
+          color: SOFT_LINE_COLOR,
           space: 4,
           style: BorderStyle.SINGLE,
-          size: 6
+          size: 4
         }
       },
       children: [
+        new TextRun({ text: '● ', bold: true, size: 18, color: ACCENT_COLOR }),
         new TextRun({
           text,
           bold: true,
-          size: 28,
+          size: 26,
           color: HEADING_COLOR
         })
       ]
@@ -273,7 +297,7 @@ function addSectionHeading(children, text) {
   )
 }
 
-function addKeyValueRows(children, rows) {
+function addInfoRows(children, rows) {
   const visibleRows = rows.filter(row => hasMeaningfulText(row.value))
   if (!visibleRows.length) return
 
@@ -282,10 +306,14 @@ function addKeyValueRows(children, rows) {
     addParagraph(
       children,
       [
-        new TextRun({ text: `${row.label}：`, bold: true, size: 23, color: MUTED_COLOR }),
-        new TextRun({ text: normalizeText(row.value), size: 23, color: BODY_COLOR })
+        new TextRun({ text: `${row.label}  `, bold: true, size: 21, color: HEADING_COLOR }),
+        new TextRun({ text: normalizeText(row.value), size: 21, color: BODY_COLOR })
       ],
-      { spacing: { after: 90 } }
+      {
+        spacing: { after: 90 },
+        indent: { left: 120 },
+        shading: { fill: 'FBFAF6' }
+      }
     )
   })
 }
@@ -297,9 +325,9 @@ function addMultilineText(children, text) {
   normalized.split(/\r?\n/).forEach(line => {
     addTextParagraph(children, line || ' ', {
       allowEmpty: true,
-      size: 24,
+      size: 23,
       color: BODY_COLOR,
-      spacing: { after: 120 }
+      spacing: { after: 130 }
     })
   })
 }
@@ -320,8 +348,8 @@ function getRecordTeam(record) {
   return pickText(record.team, record.group, record.organization, record.org)
 }
 
-function getFileCaption(file, index) {
-  return pickText(file.caption, file.description, file.remark, file.name, file.type) || `相关图片材料`
+function getFileCaption(file) {
+  return pickText(file.caption, file.description, file.remark, file.name, file.type) || '相关图片材料'
 }
 
 function getAttachments(record) {
@@ -347,32 +375,25 @@ function getAttachments(record) {
 
 function normalizeFiles(record) {
   return (Array.isArray(record.files) ? record.files : [])
+    .filter(Boolean)
     .map(file => ({
       ...file,
-      path: file && (file.path || file.fileID || file.url || '')
+      path: file.path || file.fileID || file.url || ''
     }))
-    .filter(file => file.path)
+    .filter(file => file.path && String(file.path).startsWith('cloud://'))
 }
 
 async function addImageMaterial(children, file, index) {
-  const caption = `图 ${index + 1}：${getFileCaption(file, index)}`
-  addTextParagraph(children, caption, {
-    allowEmpty: true,
-    bold: true,
-    size: 22,
-    color: MUTED_COLOR,
-    alignment: AlignmentType.CENTER,
-    spacing: { before: index === 0 ? 60 : 240, after: 100 }
-  })
-
+  const caption = `图 ${index + 1}：${getFileCaption(file)}`
   const buf = await fetchImageBuffer(file.path)
+
   if (!buf) {
     addTextParagraph(children, `图 ${index + 1}：图片读取失败，该图片可能未成功上传或 fileID 无效。`, {
       allowEmpty: true,
       size: 20,
       color: ERROR_COLOR,
       alignment: AlignmentType.CENTER,
-      spacing: { after: 220 }
+      spacing: { before: 120, after: 220 }
     })
     return
   }
@@ -384,7 +405,7 @@ async function addImageMaterial(children, file, index) {
   children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 240 },
+      spacing: { before: index === 0 ? 80 : 220, after: 90 },
       children: [
         new ImageRun({
           data: buf,
@@ -394,13 +415,21 @@ async function addImageMaterial(children, file, index) {
       ]
     })
   )
+
+  addTextParagraph(children, caption, {
+    allowEmpty: true,
+    size: 20,
+    color: MUTED_COLOR,
+    alignment: AlignmentType.CENTER,
+    spacing: { after: 180 }
+  })
 }
 
 async function addImagesSection(children, record) {
   const files = normalizeFiles(record)
   if (!files.length) return
 
-  addSectionHeading(children, '图片材料')
+  addSectionHeading(children, '图片记录')
 
   for (let i = 0; i < files.length; i++) {
     try {
@@ -422,7 +451,7 @@ function addAttachmentsSection(children, record) {
   const attachments = getAttachments(record)
   if (!attachments.length) return
 
-  addSectionHeading(children, '附件 / 证明材料')
+  addSectionHeading(children, '附件 / 备注')
   attachments.forEach((item, index) => {
     const parts = [
       item.name,
@@ -433,27 +462,27 @@ function addAttachmentsSection(children, record) {
 
     addTextParagraph(children, `${index + 1}. ${parts.join('；')}`, {
       allowEmpty: true,
-      size: 22,
+      size: 21,
       color: BODY_COLOR,
       spacing: { after: 110 }
     })
   })
 }
 
-function addExportInfo(children, exportedAt) {
-  addSectionHeading(children, '导出信息')
-  addTextParagraph(children, `本文件由「${BRAND_NAME}」生成`, {
-    allowEmpty: true,
-    size: 21,
-    color: MUTED_COLOR,
-    spacing: { after: 80 }
-  })
-  addTextParagraph(children, `导出时间：${exportedAt || formatDateTime()}`, {
-    allowEmpty: true,
-    size: 21,
-    color: MUTED_COLOR,
-    spacing: { after: 180 }
-  })
+function addFooter(children, exportedAt) {
+  addParagraph(
+    children,
+    [
+      new TextRun({ text: `本文件由「${BRAND_NAME}」导出生成`, size: 19, color: MUTED_COLOR }),
+      new TextRun({ text: `    导出时间：${exportedAt || formatDateTime()}`, size: 19, color: MUTED_COLOR })
+    ],
+    {
+      spacing: { before: 320, after: 0 },
+      border: {
+        top: { color: SOFT_LINE_COLOR, space: 6, style: BorderStyle.SINGLE, size: 4 }
+      }
+    }
+  )
 }
 
 async function addRecordContent(children, record, options = {}) {
@@ -464,40 +493,39 @@ async function addRecordContent(children, record, options = {}) {
   const description = getRecordDescription(safeRecord)
   const notes = getRecordNotes(safeRecord)
 
-  addMainTitle(children, safeRecord.title || '未命名记录', { merge: options.merge })
+  addBrandHeader(children)
+  addMainTitle(children, safeRecord.title || '未命名记录')
 
   if (summary) {
     addTextParagraph(children, summary, {
-      size: 23,
+      size: 22,
       color: MUTED_COLOR,
       italics: true,
-      alignment: options.merge ? AlignmentType.LEFT : AlignmentType.CENTER,
-      spacing: { after: 260 }
+      spacing: { after: 220 }
     })
   }
 
-  addKeyValueRows(children, [
-    { label: '活动时间 / 经历时间', value: dateText },
-    { label: '活动地点 / 地点', value: safeRecord.location },
-    { label: '经历分类', value: safeRecord.category },
-    { label: '参与角色', value: safeRecord.role },
-    { label: '参与团队', value: getRecordTeam(safeRecord) },
-    { label: '相关标签', value: tagsText },
-    { label: '隐私状态', value: getPrivacyText(safeRecord) }
+  addInfoRows(children, [
+    { label: '日期', value: dateText },
+    { label: '分类', value: safeRecord.category },
+    { label: '地点', value: safeRecord.location },
+    { label: '角色', value: safeRecord.role },
+    { label: '团队', value: getRecordTeam(safeRecord) },
+    { label: '标签', value: tagsText }
   ])
 
   if (description) {
-    addSectionHeading(children, '经历描述')
+    addSectionHeading(children, '正文记录')
     addMultilineText(children, description)
   }
 
   if (Array.isArray(safeRecord.proofSummary) && safeRecord.proofSummary.length > 0) {
-    addSectionHeading(children, '材料概要')
+    addSectionHeading(children, '材料摘要')
     addTextParagraph(children, safeRecord.proofSummary.map(item => `${item.name}${item.count}份`).join('，'), {
       allowEmpty: true,
-      size: 22,
+      size: 21,
       color: BODY_COLOR,
-      spacing: { after: 160 }
+      spacing: { after: 150 }
     })
   }
 
@@ -505,16 +533,16 @@ async function addRecordContent(children, record, options = {}) {
   addAttachmentsSection(children, safeRecord)
 
   if (notes && notes !== description) {
-    addSectionHeading(children, '收获与感想 / 备注')
+    addSectionHeading(children, '收获与感想')
     addMultilineText(children, notes)
   }
 
-  addExportInfo(children, options.exportedAt)
+  addFooter(children, options.exportedAt)
 }
 
 async function buildSingleDocument(record, exportMeta = {}) {
   const children = []
-  await addRecordContent(children, record, { merge: false, exportedAt: exportMeta.exportedAt })
+  await addRecordContent(children, record, { exportedAt: exportMeta.exportedAt })
   return { children, fileName: safeFileName(record && record.title) }
 }
 
@@ -522,29 +550,14 @@ async function buildMergedDocument(records, exportMeta = {}) {
   const children = []
   const exportedAt = exportMeta.exportedAt || formatDateTime()
 
-  addMainTitle(children, exportMeta.title || '经历归档合并导出', { merge: false })
-  addTextParagraph(children, `导出时间：${exportedAt}`, {
-    allowEmpty: true,
-    size: 22,
-    color: MUTED_COLOR,
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 120 }
-  })
-  if (hasMeaningfulText(exportMeta.condition)) {
-    addTextParagraph(children, `导出条件：${exportMeta.condition}`, {
-      size: 22,
-      color: MUTED_COLOR,
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 360 }
-    })
-  }
-
   for (let i = 0; i < records.length; i++) {
-    children.push(new Paragraph({ children: [new PageBreak()] }))
-    await addRecordContent(children, records[i], { merge: true, exportedAt })
+    if (i > 0) {
+      children.push(new Paragraph({ children: [new PageBreak()] }))
+    }
+    await addRecordContent(children, records[i], { exportedAt })
   }
 
-  return { children, fileName: '经历归档合并导出' }
+  return { children, fileName: safeFileName(exportMeta.title || '经历归档合并导出') }
 }
 
 exports.main = async (event) => {
@@ -573,11 +586,11 @@ exports.main = async (event) => {
           document: {
             run: {
               font: 'Microsoft YaHei',
-              size: 24,
+              size: 23,
               color: BODY_COLOR
             },
             paragraph: {
-              spacing: { line: 320 }
+              spacing: { line: 330 }
             }
           }
         }
@@ -587,10 +600,10 @@ exports.main = async (event) => {
           properties: {
             page: {
               margin: {
-                top: 1000,
-                right: 900,
-                bottom: 1000,
-                left: 900
+                top: 860,
+                right: 860,
+                bottom: 900,
+                left: 860
               }
             }
           },
