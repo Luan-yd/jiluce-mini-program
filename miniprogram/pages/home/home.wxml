@@ -67,7 +67,7 @@
         ></image>
 
         <view wx:else class="record-cover empty-cover">
-          <text>{{item.category || '经历'}}</text>
+          <text>暂无图片</text>
         </view>
 
         <view class="record-info">
