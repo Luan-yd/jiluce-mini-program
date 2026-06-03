@@ -50,9 +50,9 @@
 >
   <view class="cover-wrap">
     <image
-      wx:if="{{item.cover}}"
+      wx:if="{{item.coverDisplay}}"
       class="cover"
-      src="{{item.cover}}"
+      src="{{item.coverDisplay}}"
       mode="aspectFill"
     />
     <view wx:else class="cover-placeholder">
