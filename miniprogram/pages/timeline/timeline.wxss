@@ -269,6 +269,17 @@
     background: #F1F0EC;
   }
 
+  .cover-placeholder {
+    height: 220rpx;
+    border-radius: 20rpx;
+    background: #F1F0EC;
+    color: #AAA49A;
+    font-size: 25rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .load-more {
     width: 240rpx;
     height: 72rpx;
