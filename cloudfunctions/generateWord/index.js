@@ -23,6 +23,9 @@ const MUTED_COLOR = '7B756C'
 const HEADING_COLOR = '28566B'
 const ACCENT_COLOR = 'C6A25C'
 const SOFT_LINE_COLOR = 'E8E1D4'
+const WARM_BG_COLOR = 'F8F2E7'
+const CARD_BG_COLOR = 'FBF8F0'
+const IMAGE_BG_COLOR = 'FCFAF5'
 const ERROR_COLOR = '888888'
 const EMPTY_TEXT_VALUES = [
   '',
@@ -223,6 +226,19 @@ async function fetchImageBuffer(filePath) {
   }
 }
 
+function makeBorder(color = SOFT_LINE_COLOR, size = 4) {
+  return { color, space: 3, style: BorderStyle.SINGLE, size }
+}
+
+function makeBoxBorder(color = SOFT_LINE_COLOR, size = 4) {
+  return {
+    top: makeBorder(color, size),
+    bottom: makeBorder(color, size),
+    left: makeBorder(color, size),
+    right: makeBorder(color, size)
+  }
+}
+
 function addParagraph(children, runs, options = {}) {
   children.push(
     new Paragraph({
@@ -252,71 +268,110 @@ function addTextParagraph(children, text, options = {}) {
   )
 }
 
-function createLogoRun() {
+function createLogoRun(size = 32) {
   if (LOGO_BUFFER) {
     return new ImageRun({
       data: LOGO_BUFFER,
       type: 'png',
-      transformation: { width: 24, height: 24 }
+      transformation: { width: size, height: size }
     })
   }
 
-  return new TextRun({ text: '迹', bold: true, size: 22, color: HEADING_COLOR })
+  return new TextRun({ text: '迹', bold: true, size: 28, color: HEADING_COLOR })
 }
 
 function addBrandHeader(children) {
   addParagraph(
     children,
     [
-      createLogoRun(),
-      new TextRun({ text: `  ${BRAND_NAME}`, bold: true, size: 24, color: HEADING_COLOR }),
-      new TextRun({ text: `  ·  ${BRAND_SLOGAN}`, size: 18, color: MUTED_COLOR })
+      createLogoRun(32),
+      new TextRun({ text: `  ${BRAND_NAME}`, bold: true, size: 30, color: HEADING_COLOR }),
+      new TextRun({ text: `    ${BRAND_SLOGAN}`, size: 21, color: MUTED_COLOR })
     ],
     {
-      spacing: { before: 0, after: 120 },
-      shading: { fill: 'F8F5EE' },
+      spacing: { before: 0, after: 220 },
+      shading: { fill: WARM_BG_COLOR },
       border: {
-        bottom: { color: SOFT_LINE_COLOR, space: 4, style: BorderStyle.SINGLE, size: 4 }
-      }
+        bottom: { color: ACCENT_COLOR, space: 5, style: BorderStyle.SINGLE, size: 6 }
+      },
+      indent: { left: 120, right: 120 }
     }
   )
 }
 
-function addMainTitle(children, text) {
+function getMaterialSummary(record) {
+  if (Array.isArray(record.proofSummary) && record.proofSummary.length > 0) {
+    return record.proofSummary
+      .filter(item => item && hasMeaningfulText(item.name) && item.count)
+      .map(item => `${item.name}${item.count}份`)
+      .join('，')
+  }
+
+  const imageCount = normalizeFiles(record).length
+  return imageCount ? `图片 ${imageCount}张` : ''
+}
+
+function getTitleMetaPieces(record, dateText, tagsText) {
+  return [
+    dateText,
+    record.category,
+    getMaterialSummary(record),
+    tagsText
+  ].filter(hasMeaningfulText)
+}
+
+function addTitleBlock(children, record, dateText, tagsText) {
   addParagraph(
     children,
     new TextRun({
-      text: normalizeText(text) || '未命名记录',
+      text: normalizeText(record.title) || '未命名记录',
       bold: true,
-      size: 38,
+      size: 42,
       color: BODY_COLOR
     }),
     {
       alignment: AlignmentType.LEFT,
-      spacing: { before: 180, after: 160 }
+      spacing: { before: 80, after: 80 }
     }
+  )
+
+  const metaText = getTitleMetaPieces(record, dateText, tagsText).join(' · ')
+  if (metaText) {
+    addTextParagraph(children, metaText, {
+      allowEmpty: true,
+      size: 20,
+      color: MUTED_COLOR,
+      spacing: { after: 80 }
+    })
+  }
+
+  addParagraph(
+    children,
+    new TextRun({ text: '━━━━━━', size: 14, color: ACCENT_COLOR }),
+    { spacing: { after: 260 } }
   )
 }
 
-function addSectionHeading(children, text) {
+function addSectionHeading(children, text, sectionNo) {
+  const numberText = sectionNo ? `${padNumber(sectionNo)}  ` : '● '
   children.push(
     new Paragraph({
       heading: HeadingLevel.HEADING_2,
-      spacing: { before: 300, after: 140 },
+      spacing: { before: 260, after: 150 },
       border: {
         bottom: {
           color: SOFT_LINE_COLOR,
-          space: 4,
+          space: 5,
           style: BorderStyle.SINGLE,
           size: 4
         }
       },
       children: [
-        new TextRun({ text: '● ', bold: true, size: 18, color: ACCENT_COLOR }),
+        new TextRun({ text: numberText, bold: true, size: 20, color: ACCENT_COLOR }),
         new TextRun({
           text,
           bold: true,
-          size: 26,
+          size: 27,
           color: HEADING_COLOR
         })
       ]
@@ -324,25 +379,29 @@ function addSectionHeading(children, text) {
   )
 }
 
-function addInfoRows(children, rows) {
+function addInfoRows(children, rows, sectionNo) {
   const visibleRows = rows.filter(row => hasMeaningfulText(row.value))
-  if (!visibleRows.length) return
+  if (!visibleRows.length) return false
 
-  addSectionHeading(children, '基础信息')
-  visibleRows.forEach(row => {
+  addSectionHeading(children, '基础信息', sectionNo)
+  visibleRows.forEach((row, index) => {
+    const border = makeBoxBorder(index === 0 ? ACCENT_COLOR : SOFT_LINE_COLOR, index === 0 ? 5 : 3)
     addParagraph(
       children,
       [
-        new TextRun({ text: `${row.label}  `, bold: true, size: 21, color: HEADING_COLOR }),
+        new TextRun({ text: `${row.label}：`, bold: true, size: 21, color: HEADING_COLOR }),
         new TextRun({ text: normalizeText(row.value), size: 21, color: BODY_COLOR })
       ],
       {
-        spacing: { after: 90 },
-        indent: { left: 120 },
-        shading: { fill: 'FBFAF6' }
+        spacing: { before: index === 0 ? 30 : 0, after: 70 },
+        indent: { left: 220, right: 180 },
+        shading: { fill: CARD_BG_COLOR },
+        border
       }
     )
   })
+
+  return true
 }
 
 function addMultilineText(children, text) {
@@ -420,7 +479,9 @@ async function addImageMaterial(children, file, index) {
       size: 20,
       color: ERROR_COLOR,
       alignment: AlignmentType.CENTER,
-      spacing: { before: 120, after: 220 }
+      spacing: { before: 120, after: 180 },
+      shading: { fill: IMAGE_BG_COLOR },
+      border: makeBoxBorder(SOFT_LINE_COLOR, 3)
     })
     return
   }
@@ -432,7 +493,9 @@ async function addImageMaterial(children, file, index) {
   children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { before: index === 0 ? 80 : 220, after: 90 },
+      spacing: { before: index === 0 ? 60 : 160, after: 70 },
+      shading: { fill: IMAGE_BG_COLOR },
+      border: makeBoxBorder(SOFT_LINE_COLOR, 3),
       children: [
         new ImageRun({
           data: buf,
@@ -445,18 +508,18 @@ async function addImageMaterial(children, file, index) {
 
   addTextParagraph(children, caption, {
     allowEmpty: true,
-    size: 20,
+    size: 19,
     color: MUTED_COLOR,
     alignment: AlignmentType.CENTER,
-    spacing: { after: 180 }
+    spacing: { after: 140 }
   })
 }
 
-async function addImagesSection(children, record) {
+async function addImagesSection(children, record, sectionNo) {
   const files = normalizeFiles(record)
-  if (!files.length) return
+  if (!files.length) return false
 
-  addSectionHeading(children, '图片记录')
+  addSectionHeading(children, '图片记录', sectionNo)
 
   for (let i = 0; i < files.length; i++) {
     try {
@@ -468,17 +531,21 @@ async function addImagesSection(children, record) {
         size: 20,
         color: ERROR_COLOR,
         alignment: AlignmentType.CENTER,
-        spacing: { after: 220 }
+        spacing: { after: 180 },
+        shading: { fill: IMAGE_BG_COLOR },
+        border: makeBoxBorder(SOFT_LINE_COLOR, 3)
       })
     }
   }
+
+  return true
 }
 
-function addAttachmentsSection(children, record) {
+function addAttachmentsSection(children, record, sectionNo) {
   const attachments = getAttachments(record)
-  if (!attachments.length) return
+  if (!attachments.length) return false
 
-  addSectionHeading(children, '附件 / 备注')
+  addSectionHeading(children, '附件 / 备注', sectionNo)
   attachments.forEach((item, index) => {
     const parts = [
       item.name,
@@ -491,23 +558,29 @@ function addAttachmentsSection(children, record) {
       allowEmpty: true,
       size: 21,
       color: BODY_COLOR,
-      spacing: { after: 110 }
+      spacing: { after: 110 },
+      shading: { fill: CARD_BG_COLOR },
+      border: makeBoxBorder(SOFT_LINE_COLOR, 3),
+      indent: { left: 180, right: 160 }
     })
   })
+
+  return true
 }
 
 function addFooter(children, exportedAt) {
   addParagraph(
     children,
     [
-      new TextRun({ text: `本文件由「${BRAND_NAME}」导出生成`, size: 19, color: MUTED_COLOR }),
-      new TextRun({ text: `    导出时间：${exportedAt || formatDateTime()}`, size: 19, color: MUTED_COLOR })
+      new TextRun({ text: `本文件由「${BRAND_NAME}」导出生成 · 材料、照片、项目与回忆，都能分类归档、随时导出`, size: 18, color: HEADING_COLOR }),
+      new TextRun({ text: `\n导出时间：${exportedAt || formatDateTime()}`, size: 18, color: MUTED_COLOR })
     ],
     {
-      spacing: { before: 320, after: 0 },
+      spacing: { before: 340, after: 0 },
       border: {
-        top: { color: SOFT_LINE_COLOR, space: 6, style: BorderStyle.SINGLE, size: 4 }
-      }
+        top: { color: ACCENT_COLOR, space: 6, style: BorderStyle.SINGLE, size: 4 }
+      },
+      shading: { fill: 'FFFEFB' }
     }
   )
 }
@@ -519,48 +592,62 @@ async function addRecordContent(children, record, options = {}) {
   const summary = getRecordSummary(safeRecord)
   const description = getRecordDescription(safeRecord)
   const notes = getRecordNotes(safeRecord)
+  const materialSummary = getMaterialSummary(safeRecord)
+  let sectionNo = 1
 
   addBrandHeader(children)
-  addMainTitle(children, safeRecord.title || '未命名记录')
+  addTitleBlock(children, safeRecord, dateText, tagsText)
 
   if (summary) {
     addTextParagraph(children, summary, {
       size: 22,
       color: MUTED_COLOR,
       italics: true,
-      spacing: { after: 220 }
+      spacing: { after: 220 },
+      shading: { fill: 'FFFEFB' },
+      border: {
+        left: { color: ACCENT_COLOR, space: 4, style: BorderStyle.SINGLE, size: 8 }
+      },
+      indent: { left: 180 }
     })
   }
 
-  addInfoRows(children, [
+  if (addInfoRows(children, [
     { label: '日期', value: dateText },
     { label: '分类', value: safeRecord.category },
     { label: '地点', value: safeRecord.location },
     { label: '角色', value: safeRecord.role },
     { label: '团队', value: getRecordTeam(safeRecord) },
+    { label: '材料', value: materialSummary },
     { label: '标签', value: tagsText }
-  ])
+  ], sectionNo)) sectionNo += 1
 
   if (description) {
-    addSectionHeading(children, '正文记录')
+    addSectionHeading(children, '正文记录', sectionNo)
+    sectionNo += 1
     addMultilineText(children, description)
   }
 
   if (Array.isArray(safeRecord.proofSummary) && safeRecord.proofSummary.length > 0) {
-    addSectionHeading(children, '材料摘要')
-    addTextParagraph(children, safeRecord.proofSummary.map(item => `${item.name}${item.count}份`).join('，'), {
+    addSectionHeading(children, '材料摘要', sectionNo)
+    sectionNo += 1
+    addTextParagraph(children, materialSummary, {
       allowEmpty: true,
       size: 21,
       color: BODY_COLOR,
-      spacing: { after: 150 }
+      spacing: { after: 150 },
+      shading: { fill: CARD_BG_COLOR },
+      border: makeBoxBorder(SOFT_LINE_COLOR, 3),
+      indent: { left: 180, right: 160 }
     })
   }
 
-  await addImagesSection(children, safeRecord)
-  addAttachmentsSection(children, safeRecord)
+  if (await addImagesSection(children, safeRecord, sectionNo)) sectionNo += 1
+  if (addAttachmentsSection(children, safeRecord, sectionNo)) sectionNo += 1
 
   if (notes && notes !== description) {
-    addSectionHeading(children, '收获与感想')
+    addSectionHeading(children, '收获与感想', sectionNo)
+    sectionNo += 1
     addMultilineText(children, notes)
   }
 
@@ -627,10 +714,10 @@ exports.main = async (event) => {
           properties: {
             page: {
               margin: {
-                top: 860,
-                right: 860,
-                bottom: 900,
-                left: 860
+                top: 780,
+                right: 820,
+                bottom: 860,
+                left: 820
               }
             }
           },
