@@ -23,6 +23,26 @@ Page({
       const privateValues = ['private', 'encrypted', 'export_confirm', 'locked']
       return privateValues.includes(value) ? 'private' : 'normal'
     },
+
+    isCloudFilePath(path) {
+      return typeof path === 'string' && path.indexOf('cloud://') === 0
+    },
+
+    normalizeFiles(files) {
+      return (Array.isArray(files) ? files : [])
+        .map(file => {
+          if (!file) return null
+          const path = file.path || file.fileID || file.url || ''
+          if (!this.isCloudFilePath(path)) return null
+          return {
+            id: file.id || path,
+            path,
+            type: file.type || file.name || '材料',
+            name: file.name || file.type || '材料'
+          }
+        })
+        .filter(Boolean)
+    },
   
     loadRecord(id) {
       const rawRecords = wx.getStorageSync('records') || []
@@ -39,6 +59,7 @@ Page({
 
       const privacy = this.normalizePrivacy(record.privacy)
       const categories = getUserCategories()
+      const files = this.normalizeFiles(record.files)
   
       this.setData({
         record: {
@@ -46,7 +67,7 @@ Page({
           category: normalizeCategory(record.category, categories),
           tags: normalizeTags(record.tags),
           proofSummary: Array.isArray(record.proofSummary) ? record.proofSummary : [],
-          files: Array.isArray(record.files) ? record.files : [],
+          files,
           privacy,
           isPrivate: privacy === 'private',
           dateRangeText: this.formatDateRange(record)
@@ -72,10 +93,6 @@ Page({
 
     goList() {
       wx.switchTab({ url: '/pages/index/index' })
-    },
-
-    isCloudFilePath(path) {
-      return typeof path === 'string' && path.indexOf('cloud://') === 0
     },
 
     deleteCloudFiles(files) {
@@ -122,16 +139,28 @@ Page({
       })
     },
 
+    getPreviewUrls() {
+      return ((this.data.record && this.data.record.files) || [])
+        .map(item => item && item.path)
+        .filter(Boolean)
+    },
+
     previewHeroImage(e) {
       const index = e.currentTarget.dataset.index
-      const urls = (this.data.record.files || []).map(item => item.tempPath || item.path)
+      const urls = this.getPreviewUrls()
+      if (!urls.length || !urls[index]) return
       wx.previewImage({ current: urls[index], urls })
     },
   
     previewImage(e) {
       const index = e.currentTarget.dataset.index
-      const urls = (this.data.record.files || []).map(item => item.path)
+      const urls = this.getPreviewUrls()
+      if (!urls.length || !urls[index]) return
       wx.previewImage({ current: urls[index], urls })
+    },
+
+    onImageError(e) {
+      console.error('详情页图片加载失败：', e.detail)
     },
 
     confirmPrivateExport(callback) {
