@@ -109,7 +109,7 @@
       bindtap="previewImage"
       data-index="{{index}}"
     >
-      <image class="upload-img" src="{{item.path}}" mode="aspectFill" />
+      <image class="upload-img" src="{{item.previewPath || item.path}}" mode="aspectFill" />
       <view class="file-type">{{item.type}}</view>
       <view class="delete-btn" catchtap="deleteFile" data-index="{{index}}">×</view>
     </view>
