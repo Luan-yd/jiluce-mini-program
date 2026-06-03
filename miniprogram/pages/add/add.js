@@ -10,9 +10,8 @@ const {
 
 const DEFAULT_PROOF_TYPES = ['现场照片', '工牌证件', '合影', '聊天记录', '合同', '付款记录', '证书', '邮件']
 const PROOF_TYPE_STORAGE_KEY = 'customProofTypes'
-const TARGET_IMAGE_SIZE = 1024 * 1024
-const IDEAL_IMAGE_SIZE = 500 * 1024
-const COMPRESS_QUALITIES = [80, 65, 50, 40, 30]
+const COMPRESS_QUALITY = 80
+const MAX_FILE_COUNT = 9
 
 Page({
     data: {
@@ -92,7 +91,7 @@ Page({
       this.setData({
         isEdit: true,
         editId: id,
-        files: record.files || [],
+        files: this.normalizeStoredFiles(record.files || []),
         tagInput: normalizeTags(record.tags).join('，'),
         form: {
           title: record.title || '',
@@ -222,58 +221,67 @@ Page({
       this.setData({ 'form.privacy': this.normalizePrivacy(e.detail.value) })
     },
 
-    getFileSize(filePath) {
-      return new Promise(resolve => {
-        wx.getFileInfo({
-          filePath,
-          success: res => resolve(res.size || 0),
-          fail: () => resolve(0)
-        })
-      })
+    isCloudFilePath(path) {
+      return typeof path === 'string' && path.indexOf('cloud://') === 0
     },
 
-    compressImage(filePath, quality) {
+    getImagePath(file) {
+      if (!file) return ''
+      return file.tempFilePath || file.path || ''
+    },
+
+    getFileExt(filePath) {
+      const cleanPath = String(filePath || '').split('?')[0]
+      const match = cleanPath.match(/\.([a-zA-Z0-9]+)$/)
+      return match ? match[1].toLowerCase() : 'jpg'
+    },
+
+    compressImage(filePath) {
       return new Promise(resolve => {
+        if (!filePath) {
+          resolve('')
+          return
+        }
+
         wx.compressImage({
           src: filePath,
-          quality,
+          quality: COMPRESS_QUALITY,
           success: res => resolve(res.tempFilePath || filePath),
-          fail: () => resolve(filePath)
+          fail: err => {
+            console.warn('图片压缩失败，使用原图继续上传：', err)
+            resolve(filePath)
+          }
         })
       })
     },
 
     async compressImageBeforeUpload(filePath) {
-      let currentPath = filePath
-      let currentSize = await this.getFileSize(currentPath)
+      return this.compressImage(filePath)
+    },
 
-      if (currentSize > 0 && currentSize <= TARGET_IMAGE_SIZE) {
-        return currentPath
+    async uploadOneImage(file, index) {
+      const sourcePath = this.getImagePath(file)
+
+      if (!sourcePath) {
+        throw new Error(`第${index + 1}张图片路径无效`)
       }
 
-      for (const quality of COMPRESS_QUALITIES) {
-        const nextPath = await this.compressImage(currentPath, quality)
-        const nextSize = await this.getFileSize(nextPath)
+      const uploadPath = await this.compressImageBeforeUpload(sourcePath)
+      const ext = this.getFileExt(uploadPath || sourcePath)
+      const cloudPath = `proof-images/${Date.now()}_${index}_${Math.random().toString(36).slice(2)}.${ext}`
+      const uploadRes = await wx.cloud.uploadFile({ cloudPath, filePath: uploadPath || sourcePath })
 
-        if (nextSize > 0) {
-          currentPath = nextPath
-          currentSize = nextSize
-        }
-
-        if (currentSize > 0 && currentSize <= TARGET_IMAGE_SIZE) {
-          break
-        }
+      if (!uploadRes || !uploadRes.fileID) {
+        throw new Error(`第${index + 1}张图片上传后没有返回 fileID`)
       }
 
-      if (currentSize > TARGET_IMAGE_SIZE) {
-        wx.showToast({ title: '图片较大，已尽量压缩', icon: 'none' })
+      return {
+        id: Date.now() + '_' + Math.random().toString(36).slice(2),
+        path: uploadRes.fileID,
+        previewPath: uploadPath || sourcePath,
+        type: this.data.currentProofType,
+        name: this.data.currentProofType
       }
-
-      if (currentSize > 0 && currentSize < IDEAL_IMAGE_SIZE) {
-        console.log('图片已压缩到约 500KB 以内')
-      }
-
-      return currentPath
     },
   
     async chooseImage() {
@@ -282,40 +290,49 @@ Page({
         return
       }
 
+      const remainingCount = Math.max(1, MAX_FILE_COUNT - ((this.data.files || []).length))
+
       wx.chooseMedia({
-        count: 9,
+        count: remainingCount,
         mediaType: ['image'],
         sourceType: ['album', 'camera'],
+        sizeType: ['compressed'],
         success: async res => {
-          wx.showLoading({ title: '压缩并上传中...', mask: true })
-    
-          try {
-            const newFiles = []
-    
-            for (const file of res.tempFiles) {
-              const compressedPath = await this.compressImageBeforeUpload(file.tempFilePath)
-              const ext = compressedPath.split('.').pop() || 'jpg'
-              const cloudPath = `proof-images/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-    
-              const uploadRes = await wx.cloud.uploadFile({ cloudPath, filePath: compressedPath })
-    
-              newFiles.push({
-                id: Date.now() + '_' + Math.random().toString(36).slice(2),
-                path: uploadRes.fileID,
-                tempPath: compressedPath,
-                type: this.data.currentProofType,
-                name: this.data.currentProofType
-              })
+          const selectedFiles = Array.isArray(res.tempFiles) ? res.tempFiles : []
+
+          if (!selectedFiles.length) return
+
+          wx.showLoading({ title: '上传图片中...', mask: true })
+
+          const newFiles = []
+          const failedIndexes = []
+
+          for (let i = 0; i < selectedFiles.length; i++) {
+            try {
+              const uploadedFile = await this.uploadOneImage(selectedFiles[i], i)
+              newFiles.push(uploadedFile)
+            } catch (err) {
+              console.error(`第${i + 1}张图片上传失败：`, err)
+              failedIndexes.push(i + 1)
             }
-    
-            this.setData({ files: [...(this.data.files || []), ...newFiles] })
-            wx.hideLoading()
-            wx.showToast({ title: '上传成功', icon: 'success' })
-          } catch (err) {
-            wx.hideLoading()
-            console.error('图片上传失败：', err)
-            wx.showToast({ title: '上传失败', icon: 'none' })
           }
+
+          wx.hideLoading()
+
+          if (newFiles.length) {
+            this.setData({ files: [...(this.data.files || []), ...newFiles] })
+          }
+
+          if (failedIndexes.length) {
+            wx.showToast({
+              title: `第${failedIndexes.join('、')}张上传失败`,
+              icon: 'none',
+              duration: 2500
+            })
+            return
+          }
+
+          wx.showToast({ title: '上传成功', icon: 'success' })
         },
         fail: err => {
           console.error('选择图片失败：', err)
@@ -326,7 +343,10 @@ Page({
   
     previewImage(e) {
       const index = e.currentTarget.dataset.index
-      const urls = this.data.files.map(item => item.tempPath || item.path)
+      const urls = this.data.files
+        .map(item => item && (item.previewPath || item.path))
+        .filter(Boolean)
+      if (!urls.length || !urls[index]) return
       wx.previewImage({ current: urls[index], urls })
     },
   
@@ -337,6 +357,22 @@ Page({
       this.setData({ files })
     },
   
+    normalizeStoredFiles(files) {
+      return (Array.isArray(files) ? files : [])
+        .map(file => {
+          if (!file) return null
+          const path = file.path || file.fileID || file.url || ''
+          if (!this.isCloudFilePath(path)) return null
+          return {
+            id: file.id || Date.now() + '_' + Math.random().toString(36).slice(2),
+            path,
+            type: file.type || file.name || '材料',
+            name: file.name || file.type || '材料'
+          }
+        })
+        .filter(Boolean)
+    },
+
     buildProofSummary(files) {
       const map = {}
       files.forEach(file => { map[file.type] = (map[file.type] || 0) + 1 })
@@ -362,11 +398,12 @@ Page({
       }
     
       const oldRecords = wx.getStorageSync('records') || []
-      const files = this.data.files || []
+      const files = this.normalizeStoredFiles(this.data.files || [])
       const proofSummary = this.buildProofSummary(files)
       const privacy = this.normalizePrivacy(form.privacy)
       const category = normalizeCategory(form.category, getUserCategories())
       const tags = normalizeTags(form.tags)
+      const cover = files.length > 0 ? files[0].path : ''
     
       if (this.data.isEdit) {
         const updatedRecords = (Array.isArray(oldRecords) ? oldRecords : []).map(item => {
@@ -384,7 +421,7 @@ Page({
               privacy,
               files,
               proofSummary,
-              cover: files.length > 0 ? (files[0].tempPath || files[0].path) : '',
+              cover,
               photoCount: files.length,
               updatedAt: new Date().toISOString()
             }
@@ -413,7 +450,7 @@ Page({
         privacy,
         files,
         proofSummary,
-        cover: files.length > 0 ? (files[0].tempPath || files[0].path) : '',
+        cover,
         photoCount: files.length,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
