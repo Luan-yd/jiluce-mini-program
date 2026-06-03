@@ -1,5 +1,6 @@
 const { exportRecordsToWord } = require('../../utils/export-word')
 const { getUserCategories, normalizeCategory, normalizeTags } = require('../../utils/categories')
+const { resolveRecordCovers } = require('../../utils/record-cover')
 
 const PAGE_SIZE = 10
 
@@ -46,11 +47,11 @@ Page({
       return ['全部', ...getUserCategories()]
     },
   
-    loadRecords() {
+    async loadRecords() {
       const filters = this.getCategoryFilters()
       const currentFilter = filters.includes(this.data.currentFilter) ? this.data.currentFilter : '全部'
       const rawRecords = wx.getStorageSync('records') || []
-      const records = (Array.isArray(rawRecords) ? rawRecords : []).map(item => this.decorateRecord(item))
+      const records = await resolveRecordCovers((Array.isArray(rawRecords) ? rawRecords : []).map(item => this.decorateRecord(item)))
   
       this.setData({ filters, currentFilter, allRecords: records }, () => {
         this.filterRecords()
