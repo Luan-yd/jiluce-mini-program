@@ -1,3 +1,5 @@
+const fs = require('fs')
+const path = require('path')
 const cloud = require('wx-server-sdk')
 const {
   Document,
@@ -15,6 +17,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const BRAND_NAME = '迹录册'
 const BRAND_SLOGAN = '让每段经历，都有迹可循'
+const LOGO_PATH = path.join(__dirname, 'assets', 'logo-square.png')
 const BODY_COLOR = '2A2A28'
 const MUTED_COLOR = '7B756C'
 const HEADING_COLOR = '28566B'
@@ -37,6 +40,18 @@ const IMAGE_LIMITS = {
   square: { maxWidth: 330, maxHeight: 390 },
   fallback: { maxWidth: 360, maxHeight: 360 }
 }
+
+function loadLogoBuffer() {
+  try {
+    if (!fs.existsSync(LOGO_PATH)) return null
+    return fs.readFileSync(LOGO_PATH)
+  } catch (err) {
+    console.error('读取品牌 logo 失败：', err)
+    return null
+  }
+}
+
+const LOGO_BUFFER = loadLogoBuffer()
 
 function safeFileName(name) {
   return String(name || 'record')
@@ -194,13 +209,13 @@ async function fetchImageBuffer(filePath) {
   try {
     if (!filePath) return null
 
-    const path = String(filePath)
+    const imagePath = String(filePath)
 
-    if (!path.startsWith('cloud://')) {
+    if (!imagePath.startsWith('cloud://')) {
       return null
     }
 
-    const result = await cloud.downloadFile({ fileID: path })
+    const result = await cloud.downloadFile({ fileID: imagePath })
     return result && result.fileContent ? result.fileContent : null
   } catch (err) {
     console.error('下载图片失败：', filePath, err)
@@ -237,11 +252,23 @@ function addTextParagraph(children, text, options = {}) {
   )
 }
 
+function createLogoRun() {
+  if (LOGO_BUFFER) {
+    return new ImageRun({
+      data: LOGO_BUFFER,
+      type: 'png',
+      transformation: { width: 24, height: 24 }
+    })
+  }
+
+  return new TextRun({ text: '迹', bold: true, size: 22, color: HEADING_COLOR })
+}
+
 function addBrandHeader(children) {
   addParagraph(
     children,
     [
-      new TextRun({ text: '迹', bold: true, size: 22, color: 'FFFFFF' }),
+      createLogoRun(),
       new TextRun({ text: `  ${BRAND_NAME}`, bold: true, size: 24, color: HEADING_COLOR }),
       new TextRun({ text: `  ·  ${BRAND_SLOGAN}`, size: 18, color: MUTED_COLOR })
     ],
