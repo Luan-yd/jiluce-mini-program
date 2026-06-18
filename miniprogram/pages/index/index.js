@@ -3,6 +3,12 @@ const { getUserCategories, normalizeCategory, normalizeTags } = require('../../u
 const { resolveRecordCovers } = require('../../utils/record-cover')
 
 const PAGE_SIZE = 10
+const COMMUNITY_ACTIVITY_EXAMPLE_MATERIALS = [
+  { src: '/images/onboarding/example-community-scene.jpg', label: '活动现场' },
+  { src: '/images/onboarding/example-community-poster.jpg', label: '宣传海报' },
+  { src: '/images/onboarding/example-community-material.jpg', label: '工作材料' },
+  { src: '/images/onboarding/example-community-group.jpg', label: '活动合影' }
+]
 
 Page({
     data: {
@@ -17,7 +23,8 @@ Page({
       hasMore: false,
       isGenerating: false,
       showExample: false,
-      onboardingTags: ['项目经历', '活动记录', '旅行回忆', '申请材料']
+      onboardingTags: ['项目经历', '活动记录', '旅行回忆', '申请材料'],
+      exampleMaterials: COMMUNITY_ACTIVITY_EXAMPLE_MATERIALS
     },
   
     onShow() {
@@ -213,6 +220,13 @@ Page({
 
     hideExampleRecord() {
       this.setData({ showExample: false })
+    },
+
+    previewExampleMaterial(e) {
+      const index = e.currentTarget.dataset.index
+      const urls = this.data.exampleMaterials.map(item => item.src)
+      if (!urls.length || !urls[index]) return
+      wx.previewImage({ current: urls[index], urls })
     },
 
     goAddFromExample() {
