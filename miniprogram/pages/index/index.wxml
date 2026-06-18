@@ -113,21 +113,15 @@
   </view>
 
   <view class="example-material-grid">
-    <view class="example-material-item">
-      <image class="example-material-img" src="/images/onboarding/example-community-scene.jpg" mode="aspectFill" />
-      <view class="example-material-caption">活动现场</view>
-    </view>
-    <view class="example-material-item">
-      <image class="example-material-img" src="/images/onboarding/example-community-poster.jpg" mode="aspectFill" />
-      <view class="example-material-caption">宣传海报</view>
-    </view>
-    <view class="example-material-item">
-      <image class="example-material-img" src="/images/onboarding/example-community-material.jpg" mode="aspectFill" />
-      <view class="example-material-caption">工作材料</view>
-    </view>
-    <view class="example-material-item">
-      <image class="example-material-img" src="/images/onboarding/example-community-group.jpg" mode="aspectFill" />
-      <view class="example-material-caption">活动合影</view>
+    <view
+      wx:for="{{exampleMaterials}}"
+      wx:key="src"
+      class="example-material-item"
+      bindtap="previewExampleMaterial"
+      data-index="{{index}}"
+    >
+      <image class="example-material-img" src="{{item.src}}" mode="aspectFill" />
+      <view class="example-material-caption">{{item.label}}</view>
     </view>
   </view>
 
