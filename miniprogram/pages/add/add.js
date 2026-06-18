@@ -12,6 +12,13 @@ const DEFAULT_PROOF_TYPES = ['现场照片', '工牌证件', '合影', '聊天�
 const PROOF_TYPE_STORAGE_KEY = 'customProofTypes'
 const COMPRESS_QUALITY = 80
 const MAX_FILE_COUNT = 9
+const COMMUNITY_ACTIVITY_TEMPLATE = {
+  title: '社区环保活动记录',
+  category: '活动 / 项目',
+  location: '城市公园',
+  role: '参与者 / 组织协助',
+  description: '记录活动过程、个人参与内容和后续可复盘的材料。'
+}
 
 Page({
     data: {
@@ -46,6 +53,11 @@ Page({
 
       if (options.id) {
         this.loadEditRecord(options.id)
+        return
+      }
+
+      if (options.template === 'communityActivity') {
+        this.applyCommunityActivityTemplate()
       }
     },
 
@@ -75,6 +87,29 @@ Page({
       const categories = getUserCategories()
       const currentCategory = normalizeCategory(this.data.form.category, categories)
       this.setData({ categories, 'form.category': currentCategory })
+    },
+
+    applyCommunityActivityTemplate() {
+      const template = COMMUNITY_ACTIVITY_TEMPLATE
+      const categories = getUserCategories()
+
+      if (!categories.includes(template.category)) {
+        saveUserCategories([...categories, template.category])
+      }
+
+      const nextCategories = getUserCategories()
+
+      this.setData({
+        categories: nextCategories,
+        form: {
+          ...this.data.form,
+          title: template.title,
+          category: template.category,
+          location: template.location,
+          role: template.role,
+          description: template.description
+        }
+      })
     },
   
     loadEditRecord(id) {
@@ -460,6 +495,6 @@ Page({
       records.unshift(newRecord)
       wx.setStorageSync('records', records)
       wx.showToast({ title: '保存成功', icon: 'success' })
-      setTimeout(() => { wx.switchTab({ url: '/pages/index/index' }) }, 600)
+      setTimeout(() => { wx.switchTab({ url: '/pages/home/home' }) }, 600)
     }
   })
