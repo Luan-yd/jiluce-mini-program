@@ -21,32 +21,25 @@ const COMMUNITY_ACTIVITY_TEMPLATE = {
 }
 const COMMUNITY_ACTIVITY_EXAMPLE_FILES = [
   {
-    id: 'community_activity_scene',
-    path: '/images/onboarding/example-community-scene.jpg',
-    previewPath: '/images/onboarding/example-community-scene.jpg',
-    type: '现场照片',
-    name: '现场照片'
+    id: 'community_activity_group',
+    path: '../../images/onboarding/example-community-group.jpg',
+    previewPath: '../../images/onboarding/example-community-group.jpg',
+    type: '合影照片',
+    name: '合影照片'
   },
   {
     id: 'community_activity_poster',
-    path: '/images/onboarding/example-community-poster.jpg',
-    previewPath: '/images/onboarding/example-community-poster.jpg',
-    type: '宣传海报',
-    name: '宣传海报'
+    path: '../../images/onboarding/example-community-poster.jpg',
+    previewPath: '../../images/onboarding/example-community-poster.jpg',
+    type: '活动海报',
+    name: '活动海报'
   },
   {
     id: 'community_activity_material',
-    path: '/images/onboarding/example-community-material.jpg',
-    previewPath: '/images/onboarding/example-community-material.jpg',
-    type: '工作材料',
-    name: '工作材料'
-  },
-  {
-    id: 'community_activity_group',
-    path: '/images/onboarding/example-community-group.jpg',
-    previewPath: '/images/onboarding/example-community-group.jpg',
-    type: '合影',
-    name: '合影'
+    path: '../../images/onboarding/example-community-material.jpg',
+    previewPath: '../../images/onboarding/example-community-material.jpg',
+    type: '签到记录',
+    name: '签到记录'
   }
 ]
 const COMMUNITY_ACTIVITY_PROOF_TYPES = COMMUNITY_ACTIVITY_EXAMPLE_FILES.map(item => item.type)
@@ -539,6 +532,7 @@ Page({
       const records = Array.isArray(oldRecords) ? oldRecords : []
       records.unshift(newRecord)
       wx.setStorageSync('records', records)
+      wx.setStorageSync('hasCreatedFirstRecord', true)
       wx.showToast({ title: '保存成功', icon: 'success' })
       setTimeout(() => { wx.switchTab({ url: '/pages/home/home' }) }, 600)
     }
