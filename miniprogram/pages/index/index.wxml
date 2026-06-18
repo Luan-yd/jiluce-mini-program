@@ -129,7 +129,6 @@
     <text class="example-value">现场照片、活动海报、签到记录</text>
   </view>
   <view class="example-note">记录活动过程、个人参与内容和后续可复盘的材料。</view>
-  <view class="example-source">示例图片素材均为 AI 生成。</view>
 
   <view class="example-actions">
     <view class="example-primary-btn" bindtap="goAddFromExample">参考示例创建</view>
