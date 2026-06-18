@@ -97,7 +97,7 @@ function getShareQuery(page) {
 }
 
 function showShareMenu() {
-  if (!wx || typeof wx.showShareMenu !== 'function') return
+  if (typeof wx === 'undefined' || typeof wx.showShareMenu !== 'function') return
 
   wx.showShareMenu({
     withShareTicket: true,
