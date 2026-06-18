@@ -15,10 +15,17 @@ Page({
       records: [],
       pageIndex: 1,
       hasMore: false,
-      isGenerating: false
+      isGenerating: false,
+      showExample: false,
+      onboardingTags: ['项目经历', '活动记录', '旅行回忆', '申请材料']
     },
   
     onShow() {
+      const shouldShowExample = wx.getStorageSync('showOnboardingExample')
+      if (shouldShowExample) {
+        wx.removeStorageSync('showOnboardingExample')
+        this.setData({ showExample: true })
+      }
       this.loadRecords()
     },
 
@@ -198,6 +205,18 @@ Page({
           }
         }
       })
+    },
+
+    showExampleRecord() {
+      this.setData({ showExample: true })
+    },
+
+    hideExampleRecord() {
+      this.setData({ showExample: false })
+    },
+
+    goAddFromExample() {
+      wx.navigateTo({ url: '/pages/add/add?template=communityActivity' })
     },
   
     goAdd() {
