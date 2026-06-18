@@ -112,6 +112,21 @@
     <view class="example-close" bindtap="hideExampleRecord">×</view>
   </view>
 
+  <view class="example-material-grid">
+    <view class="example-material-item">
+      <image class="example-material-img" src="/images/onboarding/example-community-photo.svg" mode="aspectFill" />
+      <view class="example-material-caption">现场照片</view>
+    </view>
+    <view class="example-material-item">
+      <image class="example-material-img" src="/images/onboarding/example-community-poster.svg" mode="aspectFill" />
+      <view class="example-material-caption">活动通知</view>
+    </view>
+    <view class="example-material-item">
+      <image class="example-material-img" src="/images/onboarding/example-community-signin.svg" mode="aspectFill" />
+      <view class="example-material-caption">签到记录</view>
+    </view>
+  </view>
+
   <view class="example-row">
     <text class="example-label">分类</text>
     <text class="example-value">活动 / 项目</text>
@@ -126,7 +141,7 @@
   </view>
   <view class="example-row">
     <text class="example-label">材料</text>
-    <text class="example-value">现场照片、活动海报、签到记录</text>
+    <text class="example-value">现场照片、活动通知、签到记录</text>
   </view>
   <view class="example-note">记录活动过程、个人参与内容和后续可复盘的材料。</view>
 
