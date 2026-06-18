@@ -103,52 +103,6 @@
   </view>
 </view>
 
-<view class="example-card" wx:if="{{allRecords.length === 0 && showExample}}">
-  <view class="example-card-head">
-    <view>
-      <view class="example-title">社区环保活动记录</view>
-      <view class="example-subtitle">示例记录不会写入数据库</view>
-    </view>
-    <view class="example-close" bindtap="hideExampleRecord">×</view>
-  </view>
-
-  <view class="example-material-grid">
-    <view
-      wx:for="{{exampleMaterials}}"
-      wx:key="src"
-      class="example-material-item"
-      bindtap="previewExampleMaterial"
-      data-index="{{index}}"
-    >
-      <image class="example-material-img" src="{{item.src}}" mode="aspectFill" />
-      <view class="example-material-caption">{{item.label}}</view>
-    </view>
-  </view>
-
-  <view class="example-row">
-    <text class="example-label">分类</text>
-    <text class="example-value">活动 / 项目</text>
-  </view>
-  <view class="example-row">
-    <text class="example-label">地点</text>
-    <text class="example-value">城市公园</text>
-  </view>
-  <view class="example-row">
-    <text class="example-label">身份 / 角色</text>
-    <text class="example-value">参与者 / 组织协助</text>
-  </view>
-  <view class="example-row">
-    <text class="example-label">材料</text>
-    <text class="example-value">活动现场、宣传海报、工作材料、活动合影</text>
-  </view>
-  <view class="example-note">记录活动过程、个人参与内容和后续可复盘的材料。</view>
-
-  <view class="example-actions">
-    <view class="example-primary-btn" bindtap="goAddFromExample">参考示例创建</view>
-    <view class="example-secondary-btn" bindtap="goAdd">创建自己的经历</view>
-  </view>
-</view>
-
 <view class="empty" wx:if="{{allRecords.length > 0 && records.length === 0}}">
   <view class="empty-title">暂无符合条件的记录</view>
   <view class="empty-desc">

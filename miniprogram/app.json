@@ -5,6 +5,7 @@
     "pages/index/index",
     "pages/add/add",
     "pages/detail/detail",
+    "pages/example/example",
     "pages/proof/proof",
     "pages/timeline/timeline",
     "pages/export/export",

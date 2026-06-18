@@ -1,0 +1,85 @@
+<view class="detail-page example-page" wx:if="{{record}}">
+
+<view class="top-nav">
+  <view class="back-text" bindtap="goList">‹ 返回</view>
+  <view class="nav-title">示例详情</view>
+  <view class="nav-placeholder"></view>
+</view>
+
+<view class="hero">
+  <swiper
+    class="hero-swiper"
+    indicator-dots="{{record.files.length > 1}}"
+    circular="{{record.files.length > 1}}"
+  >
+    <swiper-item
+      wx:for="{{record.files}}"
+      wx:key="id"
+      bindtap="previewHeroImage"
+      data-index="{{index}}"
+    >
+      <image class="hero-img" src="{{item.path}}" mode="aspectFill" />
+    </swiper-item>
+  </swiper>
+</view>
+
+<view class="content-card">
+  <view class="detail-title-row">
+    <view class="detail-title">{{record.title}}</view>
+  </view>
+  <view class="detail-meta">{{record.dateRangeText}}｜{{record.category}}｜{{record.location}}</view>
+
+  <view class="tag-row">
+    <view wx:for="{{record.tags}}" wx:key="*this" class="tag-green">{{item}}</view>
+  </view>
+
+  <view class="section-title">证明摘要</view>
+
+  <view class="summary-box">
+    <view class="summary-row">
+      <text class="summary-label">身份</text>
+      <text class="summary-value">{{record.role}}</text>
+    </view>
+
+    <view class="summary-row">
+      <text class="summary-label">材料</text>
+      <view class="summary-value summary-material-value">
+        <text
+          wx:for="{{record.proofSummary}}"
+          wx:key="name"
+          class="proof-summary-text"
+        >{{item.name}}{{item.count}}份{{index < record.proofSummary.length - 1 ? '，' : ''}}</text>
+      </view>
+    </view>
+
+    <view class="summary-row">
+      <text class="summary-label">备注</text>
+      <text class="summary-value">{{record.description}}</text>
+    </view>
+  </view>
+
+  <view class="section-title">材料</view>
+  <view class="material-tip example-material-tip">合影照片、活动海报和签到记录，可以组成一次经历的完整证明。</view>
+
+  <view class="material-grid">
+    <view
+      wx:for="{{record.files}}"
+      wx:key="id"
+      class="material-item"
+      bindtap="previewImage"
+      data-index="{{index}}"
+    >
+      <image class="material-img" src="{{item.path}}" mode="aspectFill" />
+      <view class="material-type">{{item.type}}</view>
+    </view>
+  </view>
+
+  <view class="example-note">示例内容不会直接写入数据库，仅用于帮助理解记录方式。</view>
+
+  <view class="example-actions">
+    <button class="example-primary-btn" bindtap="goAddFromExample">参考示例创建</button>
+    <button class="example-secondary-btn" bindtap="goAddBlank">创建自己的经历</button>
+  </view>
+</view>
+
+</view>

@@ -1,0 +1,57 @@
+@import "../detail/detail.wxss";
+
+.example-page {
+  padding-bottom: 44rpx;
+}
+
+.back-text {
+  width: 88rpx;
+  font-size: 28rpx;
+  color: #294C60;
+}
+
+.example-material-tip {
+  color: #77746E;
+}
+
+.example-note {
+  margin-top: 26rpx;
+  color: #77746E;
+  font-size: 24rpx;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.example-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.example-actions button {
+  flex: 1;
+  height: 84rpx;
+  line-height: 84rpx;
+  margin: 0;
+  padding: 0;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.example-actions button::after {
+  border: none;
+}
+
+.example-primary-btn {
+  background: #294C60;
+  color: #FFFFFF;
+  box-shadow: 0 12rpx 28rpx rgba(41, 76, 96, 0.18);
+}
+
+.example-secondary-btn {
+  background: #F8F6F1;
+  color: #294C60;
+  border: 1rpx solid #E5E1DA;
+  box-sizing: border-box;
+}
