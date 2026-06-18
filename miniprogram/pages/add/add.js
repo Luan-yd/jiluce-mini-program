@@ -19,6 +19,38 @@ const COMMUNITY_ACTIVITY_TEMPLATE = {
   role: '参与者 / 组织协助',
   description: '记录活动过程、个人参与内容和后续可复盘的材料。'
 }
+const COMMUNITY_ACTIVITY_EXAMPLE_FILES = [
+  {
+    id: 'community_activity_scene',
+    path: '/images/onboarding/example-community-scene.jpg',
+    previewPath: '/images/onboarding/example-community-scene.jpg',
+    type: '现场照片',
+    name: '现场照片'
+  },
+  {
+    id: 'community_activity_poster',
+    path: '/images/onboarding/example-community-poster.jpg',
+    previewPath: '/images/onboarding/example-community-poster.jpg',
+    type: '宣传海报',
+    name: '宣传海报'
+  },
+  {
+    id: 'community_activity_material',
+    path: '/images/onboarding/example-community-material.jpg',
+    previewPath: '/images/onboarding/example-community-material.jpg',
+    type: '工作材料',
+    name: '工作材料'
+  },
+  {
+    id: 'community_activity_group',
+    path: '/images/onboarding/example-community-group.jpg',
+    previewPath: '/images/onboarding/example-community-group.jpg',
+    type: '合影',
+    name: '合影'
+  }
+]
+const COMMUNITY_ACTIVITY_PROOF_TYPES = COMMUNITY_ACTIVITY_EXAMPLE_FILES.map(item => item.type)
+const COMMUNITY_ACTIVITY_EXAMPLE_PATHS = COMMUNITY_ACTIVITY_EXAMPLE_FILES.map(item => item.path)
 
 Page({
     data: {
@@ -97,10 +129,18 @@ Page({
         saveUserCategories([...categories, template.category])
       }
 
+      const cachedProofTypes = wx.getStorageSync(PROOF_TYPE_STORAGE_KEY)
+      const proofTypes = Array.isArray(cachedProofTypes) && cachedProofTypes.length ? cachedProofTypes : this.data.proofTypes
+      const nextProofTypes = Array.from(new Set([...proofTypes, ...COMMUNITY_ACTIVITY_PROOF_TYPES]))
+      wx.setStorageSync(PROOF_TYPE_STORAGE_KEY, nextProofTypes)
+
       const nextCategories = getUserCategories()
 
       this.setData({
         categories: nextCategories,
+        proofTypes: nextProofTypes,
+        currentProofType: COMMUNITY_ACTIVITY_EXAMPLE_FILES[0].type,
+        files: COMMUNITY_ACTIVITY_EXAMPLE_FILES.map(item => ({ ...item })),
         form: {
           ...this.data.form,
           title: template.title,
@@ -260,6 +300,10 @@ Page({
       return typeof path === 'string' && path.indexOf('cloud://') === 0
     },
 
+    isBundledExampleFilePath(path) {
+      return COMMUNITY_ACTIVITY_EXAMPLE_PATHS.includes(path)
+    },
+
     getImagePath(file) {
       if (!file) return ''
       return file.tempFilePath || file.path || ''
@@ -397,10 +441,11 @@ Page({
         .map(file => {
           if (!file) return null
           const path = file.path || file.fileID || file.url || ''
-          if (!this.isCloudFilePath(path)) return null
+          if (!this.isCloudFilePath(path) && !this.isBundledExampleFilePath(path)) return null
           return {
             id: file.id || Date.now() + '_' + Math.random().toString(36).slice(2),
             path,
+            previewPath: file.previewPath || path,
             type: file.type || file.name || '材料',
             name: file.name || file.type || '材料'
           }
