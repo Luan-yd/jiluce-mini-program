@@ -134,9 +134,8 @@ Page({
   },
 
   showExampleRecord() {
-    wx.setStorageSync('showOnboardingExample', true)
-    wx.switchTab({
-      url: '/pages/index/index'
+    wx.navigateTo({
+      url: '/pages/example/example'
     })
   },
 
