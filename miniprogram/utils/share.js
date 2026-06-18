@@ -1,8 +1,6 @@
 const SHARE_TITLE = '迹录册｜让每段经历都有迹可循'
 const SHARE_DESC = '材料、照片、项目与回忆，都能分类归档、随时导出。'
-
-// TODO: 请补充本地分享封面图片 miniprogram/assets/share-cover.png。
-const SHARE_IMAGE = '/assets/share-cover.png'
+const SHARE_IMAGE = '/images/logo-square.png'
 
 const HOME_PATH = '/pages/home/home'
 const LIST_PATH = '/pages/index/index'
