@@ -23,21 +23,21 @@ const COMMUNITY_ACTIVITY_EXAMPLE_FILES = [
   {
     id: 'community_activity_group',
     path: '../../images/onboarding/example-community-group.jpg',
-    previewPath: '../../images/onboarding/example-community-group.jpg',
+    previewPath: '/images/onboarding/example-community-group.jpg',
     type: '合影照片',
     name: '合影照片'
   },
   {
     id: 'community_activity_poster',
     path: '../../images/onboarding/example-community-poster.jpg',
-    previewPath: '../../images/onboarding/example-community-poster.jpg',
+    previewPath: '/images/onboarding/example-community-poster.jpg',
     type: '活动海报',
     name: '活动海报'
   },
   {
     id: 'community_activity_material',
     path: '../../images/onboarding/example-community-material.jpg',
-    previewPath: '../../images/onboarding/example-community-material.jpg',
+    previewPath: '/images/onboarding/example-community-material.jpg',
     type: '签到记录',
     name: '签到记录'
   }
