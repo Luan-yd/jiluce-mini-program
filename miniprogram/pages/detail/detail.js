@@ -5,6 +5,9 @@ const {
 } = require('../../utils/categories')
 
 const COMMUNITY_ACTIVITY_EXAMPLE_PATHS = [
+  '../../images/onboarding/example-community-group.jpg',
+  '../../images/onboarding/example-community-poster.jpg',
+  '../../images/onboarding/example-community-material.jpg',
   '/images/onboarding/example-community-scene.jpg',
   '/images/onboarding/example-community-poster.jpg',
   '/images/onboarding/example-community-material.jpg',
