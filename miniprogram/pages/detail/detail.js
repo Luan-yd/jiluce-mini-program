@@ -51,6 +51,7 @@ Page({
           return {
             id: file.id || path,
             path,
+            previewPath: file.previewPath || path,
             type: file.type || file.name || '材料',
             name: file.name || file.type || '材料'
           }
@@ -155,7 +156,7 @@ Page({
 
     getPreviewUrls() {
       return ((this.data.record && this.data.record.files) || [])
-        .map(item => item && item.path)
+        .map(item => item && (item.previewPath || item.path))
         .filter(Boolean)
     },
 

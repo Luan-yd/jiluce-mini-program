@@ -2,16 +2,19 @@ const EXAMPLE_FILES = [
   {
     id: 'example_group',
     path: '../../images/onboarding/example-community-group.jpg',
+    previewPath: '/images/onboarding/example-community-group.jpg',
     type: '合影照片'
   },
   {
     id: 'example_poster',
     path: '../../images/onboarding/example-community-poster.jpg',
+    previewPath: '/images/onboarding/example-community-poster.jpg',
     type: '活动海报'
   },
   {
     id: 'example_material',
     path: '../../images/onboarding/example-community-material.jpg',
+    previewPath: '/images/onboarding/example-community-material.jpg',
     type: '签到记录'
   }
 ]
@@ -53,7 +56,7 @@ Page({
 
   previewByIndex(index) {
     const files = this.data.record.files || []
-    const urls = files.map(item => item.path)
+    const urls = files.map(item => item.previewPath || item.path).filter(Boolean)
     const current = urls[index]
 
     if (!current) return
