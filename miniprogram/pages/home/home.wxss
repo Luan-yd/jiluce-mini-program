@@ -319,16 +319,16 @@ page {
 }
 
 .empty-card {
-  padding: 46rpx 32rpx;
+  padding: 38rpx 30rpx;
   border-radius: 28rpx;
   background: rgba(255, 255, 255, 0.84);
-  text-align: center;
+  text-align: left;
   color: #8a8178;
 }
 
 .empty-title {
   font-size: 30rpx;
-  font-weight: 700;
+  font-weight: 800;
   color: #28566b;
   margin-bottom: 12rpx;
 }
@@ -338,10 +338,55 @@ page {
   line-height: 1.6;
 }
 
+.home-empty-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 22rpx;
+}
+
+.home-empty-tags text {
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: #f7f5ef;
+  border: 1rpx solid #e5e1da;
+  color: #5f5a52;
+  font-size: 23rpx;
+}
+
+.home-empty-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 26rpx;
+}
+
+.home-primary-btn,
+.home-secondary-btn {
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.home-primary-btn {
+  background: #28566b;
+  color: #ffffff;
+  box-shadow: 0 8rpx 20rpx rgba(40, 86, 107, 0.16);
+}
+
+.home-secondary-btn {
+  background: #ffffff;
+  color: #28566b;
+  border: 1rpx solid #e5e1da;
+}
+
 .safe-banner {
   margin-top: 28rpx;
-  height: 64rpx;
-  padding: 0 20rpx;
+  min-height: 64rpx;
+  padding: 12rpx 20rpx;
   border-radius: 16rpx;
   background: #f8ead8;
   color: #7b6245;
@@ -349,6 +394,7 @@ page {
   display: flex;
   align-items: center;
   gap: 12rpx;
+  box-sizing: border-box;
 }
 
 .safe-icon {
