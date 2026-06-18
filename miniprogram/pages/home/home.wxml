@@ -82,8 +82,18 @@
   </view>
 
   <view class="empty-card" wx:else>
-    <view class="empty-title">还没有经历记录</view>
-    <view class="empty-desc">从一次兼职、一次展会、一个项目开始，把材料慢慢整理起来。</view>
+    <view class="empty-title">先记录一段值得保留的经历</view>
+    <view class="empty-desc">项目、活动、实习、旅行或申请材料，都可以整理成可导出的档案。</view>
+    <view class="home-empty-tags">
+      <text>项目经历</text>
+      <text>活动记录</text>
+      <text>旅行回忆</text>
+      <text>申请材料</text>
+    </view>
+    <view class="home-empty-actions">
+      <view class="home-primary-btn" bindtap="goAddRecord">创建第一条经历</view>
+      <view class="home-secondary-btn" bindtap="showExampleRecord">查看示例</view>
+    </view>
   </view>
 
   <view class="safe-banner">

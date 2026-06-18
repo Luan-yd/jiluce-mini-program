@@ -4,6 +4,13 @@ const {
   normalizeTags
 } = require('../../utils/categories')
 
+const COMMUNITY_ACTIVITY_EXAMPLE_PATHS = [
+  '/images/onboarding/example-community-scene.jpg',
+  '/images/onboarding/example-community-poster.jpg',
+  '/images/onboarding/example-community-material.jpg',
+  '/images/onboarding/example-community-group.jpg'
+]
+
 Page({
     data: {
       id: '',
@@ -28,12 +35,16 @@ Page({
       return typeof path === 'string' && path.indexOf('cloud://') === 0
     },
 
+    isBundledExampleFilePath(path) {
+      return COMMUNITY_ACTIVITY_EXAMPLE_PATHS.includes(path)
+    },
+
     normalizeFiles(files) {
       return (Array.isArray(files) ? files : [])
         .map(file => {
           if (!file) return null
           const path = file.path || file.fileID || file.url || ''
-          if (!this.isCloudFilePath(path)) return null
+          if (!this.isCloudFilePath(path) && !this.isBundledExampleFilePath(path)) return null
           return {
             id: file.id || path,
             path,

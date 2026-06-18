@@ -133,6 +133,13 @@ Page({
     })
   },
 
+  showExampleRecord() {
+    wx.setStorageSync('showOnboardingExample', true)
+    wx.switchTab({
+      url: '/pages/index/index'
+    })
+  },
+
   goDetail(e) {
     const id = e.currentTarget.dataset.id
 
