@@ -1,0 +1,33 @@
+<view class="onboarding-page">
+  <view class="brand-block">
+    <view class="brand-title">迹录册</view>
+    <view class="brand-subtitle">经历归档</view>
+  </view>
+
+  <view class="guide-panel">
+    <view class="guide-icon">
+      <view class="paper paper-one"></view>
+      <view class="paper paper-two"></view>
+      <view class="archive-box">
+        <view class="box-label"></view>
+      </view>
+    </view>
+
+    <view class="guide-title">先记录一段值得保留的经历</view>
+    <view class="guide-desc">项目、活动、实习、旅行或申请材料，都可以整理成可导出的档案。</view>
+
+    <view class="onboarding-tag-row">
+      <view wx:for="{{onboardingTags}}" wx:key="*this" class="onboarding-tag">{{item}}</view>
+    </view>
+
+    <view class="guide-actions">
+      <view class="primary-guide-btn" bindtap="goAdd">创建第一条经历</view>
+      <view class="secondary-guide-btn" bindtap="showExampleRecord">查看示例</view>
+    </view>
+  </view>
+
+  <view class="safe-banner">
+    <text class="safe-icon">盾</text>
+    <text>先完成第一条记录，之后就会进入正式首页查看最近记录。</text>
+  </view>
+</view>
