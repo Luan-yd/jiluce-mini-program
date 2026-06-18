@@ -1,17 +1,17 @@
 const EXAMPLE_FILES = [
   {
     id: 'example_group',
-    path: '/images/onboarding/example-community-group.jpg',
+    path: '../../images/onboarding/example-community-group.jpg',
     type: '合影照片'
   },
   {
     id: 'example_poster',
-    path: '/images/onboarding/example-community-poster.jpg',
+    path: '../../images/onboarding/example-community-poster.jpg',
     type: '活动海报'
   },
   {
     id: 'example_material',
-    path: '/images/onboarding/example-community-material.jpg',
+    path: '../../images/onboarding/example-community-material.jpg',
     type: '签到记录'
   }
 ]
@@ -38,7 +38,7 @@ Page({
   goList() {
     wx.navigateBack({
       fail: () => {
-        wx.switchTab({ url: '/pages/home/home' })
+        wx.redirectTo({ url: '/pages/onboarding/onboarding' })
       }
     })
   },
